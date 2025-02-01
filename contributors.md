@@ -1,3 +1,3 @@
 Itaho - Everest Nguyen\
-Fritjof Johnson
+Fritjof Johnson\
 Phat Chau
