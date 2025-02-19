@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project MooseFactory</title>
+  <style>
+    /* Global Styles */
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    
+    .container {
+      text-align: center;
+      padding: 20px;
+    }
+    
+    h1 {
+      color: #d32f2f; /* Red shade */
+      font-size: 3em;
+      margin-bottom: 50px;
+    }
+    
+    .login-btn {
+      background-color: #d32f2f;
+      color: #fff;
+      border: none;
+      padding: 15px 30px;
+      font-size: 1.2em;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    
+    .login-btn:hover {
+      background-color: #b71c1c;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Project MooseFactory</h1>
+    <button class="login-btn" id="ms-login-btn">Sign in with Microsoft</button>
+  </div>
+
+  <!-- MSAL.js Library -->
+  <script src="https://alcdn.msauth.net/browser/2.29.0/js/msal-browser.min.js"></script>
+  <script>
+    // MSAL configuration: replace the placeholders with your Azure AD app details.
+    const msalConfig = {
+      auth: {
+        clientId: "d4c9b95e-3499-4e4c-9bdd-da2020ea0d88", 
+        authority: "https://login.microsoftonline.com/170bbabd-a2f0-4c90-ad4b-0e8f0f0c4259", // e.g., "common" or your tenant id
+        redirectUri: "https://moosefactoryusermanagment-dkbeg8ecagceahcx.centralus-01.azurewebsites.net/" 
+      }
+    };
+
+    // Create an instance of PublicClientApplication
+    const msalInstance = new msal.PublicClientApplication(msalConfig);
+
+    // Function to handle the login process
+    function signIn() {
+      msalInstance.loginPopup()
+        .then(response => {
+          console.log("Login successful:", response);
+          alert("Login successful!");
+          // Further logic (e.g., storing tokens, redirecting, etc.) can be added here.
+        })
+        .catch(error => {
+          console.error("Login failed:", error);
+          alert("Login failed: " + error);
+        });
+    }
+
+    // Attach the click event to the login button
+    document.getElementById("ms-login-btn").addEventListener("click", signIn);
+  </script>
+</body>
+</html>
