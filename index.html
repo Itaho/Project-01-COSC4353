@@ -1,86 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Project MooseFactory</title>
   <style>
-    /* Global Styles */
-    body {
+    /* Reset some default browser margins/padding */
+    * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
+    }
+
+    body {
       background-color: #fff;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #c00; /* Red text color */
+      font-family: Arial, sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
+      margin: 0;
     }
-    
+
     .container {
-      text-align: center;
+      width: 90%;
+      max-width: 500px;
+      border: 2px solid #c00;
+      border-radius: 10px;
       padding: 20px;
+      text-align: center;
     }
-    
+
     h1 {
-      color: #d32f2f; /* Red shade */
-      font-size: 3em;
-      margin-bottom: 50px;
+      margin-bottom: 0.5em; /* Space below the heading */
     }
-    
-    .login-btn {
-      background-color: #d32f2f;
+
+    p {
+      margin-bottom: 1em; /* Space below the paragraph */
+      line-height: 1.4;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1em;
+    }
+
+    input[type="email"],
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #c00;
+      border-radius: 5px;
+      font-size: 1em;
+    }
+
+    button {
+      background-color: #c00;
       color: #fff;
       border: none;
-      padding: 15px 30px;
-      font-size: 1.2em;
-      border-radius: 5px;
+      padding: 10px 20px;
+      font-size: 1em;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      border-radius: 5px;
     }
-    
-    .login-btn:hover {
-      background-color: #b71c1c;
+
+    button:hover {
+      opacity: 0.9;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Project MooseFactory</h1>
-    <button class="login-btn" id="ms-login-btn">Sign in with Microsoft</button>
+    <h1>Welcome to Project MooseFactory</h1>
+    <p>
+      This is a work in progress app. If you'd like to apply to help, please fill in your university email
+      and information below along with a brief explanation on who you are.
+    </p>
+    <form action="your-action-url-here" method="post">
+      <input type="email" name="email" placeholder="Your University Email" required>
+      <textarea name="message" rows="5" placeholder="Tell us about yourself" required></textarea>
+      <button type="submit">Submit</button>
+    </form>
   </div>
-
-  <!-- MSAL.js Library -->
-  <script src="https://alcdn.msauth.net/browser/2.29.0/js/msal-browser.min.js"></script>
-  <script>
-    // MSAL configuration: replace the placeholders with your Azure AD app details.
-    const msalConfig = {
-      auth: {
-        clientId: "d4c9b95e-3499-4e4c-9bdd-da2020ea0d88", 
-        authority: "https://login.microsoftonline.com/170bbabd-a2f0-4c90-ad4b-0e8f0f0c4259", // e.g., "common" or your tenant id
-        redirectUri: "https://moosefactoryusermanagment-dkbeg8ecagceahcx.centralus-01.azurewebsites.net/" 
-      }
-    };
-
-    // Create an instance of PublicClientApplication
-    const msalInstance = new msal.PublicClientApplication(msalConfig);
-
-    // Function to handle the login process
-    function signIn() {
-      msalInstance.loginPopup()
-        .then(response => {
-          console.log("Login successful:", response);
-          alert("Login successful!");
-          // Further logic (e.g., storing tokens, redirecting, etc.) can be added here.
-        })
-        .catch(error => {
-          console.error("Login failed:", error);
-          alert("Login failed: " + error);
-        });
-    }
-
-    // Attach the click event to the login button
-    document.getElementById("ms-login-btn").addEventListener("click", signIn);
-  </script>
 </body>
 </html>
