@@ -71,7 +71,7 @@ def apply():
         conn.commit()
         cursor.close()
         conn.close()
-        # Redirect back to the homepage (or you could send a thank you message)
+        # Redirect back to the homepage
         return "Thank you for your submission!"
     except mysql.connector.Error as err:
         return f"Database Error: {err}", 500
