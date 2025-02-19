@@ -1,6 +1,6 @@
 import os
 import mysql.connector
-from flask import Flask
+from flask import Flask, request, render_template, redirect, url_for
 
 app = Flask(__name__)
 
@@ -50,9 +50,31 @@ def init_db():
     except mysql.connector.Error as err:
         return f"SQL Execution Error: {err}", 500
 
-@app.route("/")
+@app.route("/", methods=["GET"])
 def home():
-    return "Moose Factory Project"
+    return render_template("index.html")
+
+# Processes the form submission from the landing page
+@app.route("/apply", methods=["POST"])
+def apply():
+    email = request.form.get("email")
+    message = request.form.get("message")
+    
+    if not email or not message:
+        return "Email and message are required!", 400
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        sql = "INSERT INTO applications (email, message) VALUES (%s, %s)"
+        cursor.execute(sql, (email, message))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        # Redirect back to the homepage (or you could send a thank you message)
+        return "Thank you for your submission!"
+    except mysql.connector.Error as err:
+        return f"Database Error: {err}", 500
 
 if __name__ == "__main__":
     app.run()
