@@ -73,14 +73,20 @@ def update_user():
     username = request.form.get("username")      # This should match the user's email from the form
     new_access_level = request.form.get("access_level")  # e.g., "basic" or "administrator"
 
+    # Map the access level string to an integer value
+    role_map = {
+        "basic": 0,
+        "administrator": 1
+    }
+    new_role_id = role_map.get(new_access_level, 0)  # Defaults to 0 if not found
+
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # Update the user's access level in the database.
-        # Adjust the table and column names as needed.
+        # Update the user's access level in the database using the integer value.
         update_query = "UPDATE users SET role_id = %s WHERE email = %s"
-        cursor.execute(update_query, (new_access_level, username))
+        cursor.execute(update_query, (new_role_id, username))
         
         conn.commit()
         cursor.close()
