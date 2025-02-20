@@ -53,21 +53,10 @@ def init_db():
 @app.route("/", methods=["GET"])
 def home():
     return render_template("index.html")
-
 @app.route("/adminpanel.html", methods=["GET"])
 def admin_panel():
     return render_template("adminpanel.html")
 
-@app.route("/adminpanel.html", methods=["GET"])
-def admin_panel():
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    # Adjust this query to match your actual users table and column names
-    cursor.execute("SELECT username, access_level FROM users")
-    users = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return render_template("adminpanel.html", users=users)
 # Processes the form submission from the landing page
 @app.route("/apply", methods=["POST"])
 def apply():
