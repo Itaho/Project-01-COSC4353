@@ -55,7 +55,19 @@ def home():
     return render_template("index.html")
 @app.route("/adminpanel.html", methods=["GET"])
 def admin_panel():
-    return render_template("adminpanel.html")
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        # Adjust this query if needed to match your actual table and column names
+        cursor.execute("SELECT username, access_level FROM users")
+        users = cursor.fetchall()
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        # This will display the error message to help you debug
+        return f"Error fetching users: {str(e)}", 500
+    return render_template("adminpanel.html", users=users)
+
 
 # Processes the form submission from the landing page
 @app.route("/apply", methods=["POST"])
