@@ -67,6 +67,28 @@ def admin_panel():
         return f"Error fetching users: {str(e)}", 500
     return render_template("adminpanel.html", users=users)
 
+@app.route("/update-user", methods=["POST"])
+def update_user():
+    # Get form data
+    username = request.form.get("username")      # This should match the user's email from the form
+    new_access_level = request.form.get("access_level")  # e.g., "basic" or "administrator"
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Update the user's access level in the database.
+        # Adjust the table and column names as needed.
+        update_query = "UPDATE users SET role_id = %s WHERE email = %s"
+        cursor.execute(update_query, (new_access_level, username))
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return "User changed successfully"
+    except Exception as e:
+        return f"Error updating user: {str(e)}", 500
 
 # Processes the form submission from the landing page
 @app.route("/apply", methods=["POST"])
