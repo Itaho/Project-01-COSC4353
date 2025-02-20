@@ -58,7 +58,7 @@ def admin_panel():
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT email AS username, role_id AS access_level FROM users")
+        cursor.execute("SELECT nanme AS username, role_id AS access_level FROM users")
         users = cursor.fetchall()
         cursor.close()
         conn.close()
