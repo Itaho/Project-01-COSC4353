@@ -54,6 +54,10 @@ def init_db():
 def home():
     return render_template("index.html")
 
+@app.route("/adminpanel.html", methods=["GET"])
+def admin_panel():
+    return render_template("adminpanel.html")
+
 # Processes the form submission from the landing page
 @app.route("/apply", methods=["POST"])
 def apply():

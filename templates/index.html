@@ -21,6 +21,24 @@
       align-items: center;
       min-height: 100vh;
       margin: 0;
+      position: relative;
+    }
+
+    /* Administrator Panel button styling */
+    .admin-button {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background-color: #c00;
+      color: #fff;
+      padding: 10px 20px;
+      text-decoration: none;
+      border-radius: 5px;
+      font-family: Arial, sans-serif;
+    }
+
+    .admin-button:hover {
+      opacity: 0.9;
     }
 
     .container {
@@ -72,6 +90,8 @@
   </style>
 </head>
 <body>
+  <!-- Administrator Panel button -->
+  <a href="adminpanel.html" class="admin-button">Administrator Panel</a>
   <div class="container">
     <h1>Welcome to Project MooseFactory</h1>
     <p>

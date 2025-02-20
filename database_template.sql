@@ -44,3 +44,5 @@ CREATE TABLE applications (
     message TEXT NOT NULL,
     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Add new tables here. I will implement on the front end. 

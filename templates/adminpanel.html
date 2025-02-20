@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Panel - Project MooseFactory</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border: 1px solid #c00;
+      border-radius: 10px;
+    }
+    h1 {
+      color: #c00;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+    select, button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1em;
+    }
+    button {
+      background-color: #c00;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Admin Panel</h1>
+    <p>Manage user access levels below:</p>
+    <form action="/update-user" method="POST">
+      <label for="userSelect">Select User:</label>
+      <select id="userSelect" name="username">
+        <!-- Loop through users passed from Flask -->
+        {% for user in users %}
+          <option value="{{ user.username }}">{{ user.username }} (Current: {{ user.access_level }})</option>
+        {% endfor %}
+      </select>
+
+      <label for="accessLevel">Change Access Level:</label>
+      <select id="accessLevel" name="access_level">
+        <option value="basic">Basic User</option>
+        <option value="administrator">Administrator</option>
+      </select>
+
+      <button type="submit">Update Access Level</button>
+    </form>
+  </div>
+</body>
+</html>
