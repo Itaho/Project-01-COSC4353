@@ -58,8 +58,7 @@ def admin_panel():
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        # Adjust this query if needed to match your actual table and column names
-        cursor.execute("SELECT email, role_id FROM users")
+        cursor.execute("SELECT email AS username, role_id AS access_level FROM users")
         users = cursor.fetchall()
         cursor.close()
         conn.close()
