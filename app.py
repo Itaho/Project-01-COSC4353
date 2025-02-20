@@ -56,7 +56,14 @@ def home():
 
 @app.route("/adminpanel.html", methods=["GET"])
 def admin_panel():
-    return render_template("adminpanel.html")
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT username, access_level FROM users")
+    users = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return render_template("adminpanel.html", users=users)
+
 
 # Processes the form submission from the landing page
 @app.route("/apply", methods=["POST"])
