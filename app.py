@@ -1,7 +1,6 @@
-import os, jwt
+import os
 import mysql.connector
 from flask import Flask, request, render_template, redirect, url_for, session
-from functools import wraps
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "default_secret_key")
@@ -33,41 +32,6 @@ def execute_sql_file(cursor, filename):
             cursor.execute(statement)
             if statement.lower().startswith("select"):
                 cursor.fetchall()
-
-def get_ms_user():
-    """Extract user from Microsoft Identity headers"""
-    def decorator(f):
-        @wraps(f)
-        def wrapped(*args, **kwargs):
-            if 'X-MS-CLIENT-PRINCIPAL' in request.headers:
-                encoded_user = request.headers['X-MS-CLIENT-PRINCIPAL']
-                user = jwt.decode(encoded_user, verify=False)
-                session['user'] = {
-                    'name': user['name'],
-                    'email': user['preferred_username']
-                }
-                
-                # DATABASE INSERTION HERE
-                conn = None
-                try:
-                    conn = get_db_connection()
-                    cursor = conn.cursor()
-                    cursor.execute("""
-                        INSERT INTO users (name, email, role_id)
-                        VALUES (%s, %s, 2)
-                        ON DUPLICATE KEY UPDATE
-                        name = VALUES(name), role_id = VALUES(role_id)
-                    """, (user['name'], user['preferred_username']))
-                    conn.commit()
-                except mysql.connector.Error as err:
-                    app.logger.error(f"DB Error: {err}")
-                finally:
-                    if conn:
-                        conn.close()
-            
-            return f(*args, **kwargs)
-        return wrapped
-    return decorator
 
 @app.before_request
 def add_user_to_db():
@@ -118,11 +82,9 @@ def init_db():
         return f"SQL Execution Error: {err}", 500
 
 @app.route("/", methods=["GET"])
-@get_ms_user
 def home():
     return render_template("index.html")
 @app.route("/adminpanel.html", methods=["GET"])
-@get_ms_user
 def admin_panel():
     try:
         conn = get_db_connection()
