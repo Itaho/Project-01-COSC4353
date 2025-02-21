@@ -51,18 +51,15 @@
   <div class="container">
     <h1>Admin Panel</h1>
     <p>Manage user access levels below:</p>
-    
     <form action="/update-user" method="POST">
         <label for="userSelect">Select User:</label>
-        <select id="userSelect" name="email">
+        <select id="userSelect" name="username">
           {% for user in users %}
-            <option value="{{ user.email }}">
-              {{ user.name }} ({{ user.email }}) - Current Role: 
-              {% if user.role_id == 1 %} Administrator {% else %} Basic User {% endif %}
+            <option value="{{ user.username }}">
+              {{ user.username }} (Current: {{ user.access_level }})
             </option>
           {% endfor %}
         </select>
-        
       
         <label for="accessLevel">Change Access Level:</label>
         <select id="accessLevel" name="access_level">
