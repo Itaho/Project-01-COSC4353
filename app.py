@@ -52,49 +52,68 @@ def init_db():
 
 @app.route("/", methods=["GET"])
 def home():
+    user_email = request.headers.get("X-MS-CLIENT-PRINCIPAL-NAME")  # Get Office365 email
+
+    if not user_email:
+        return "Unauthorized. Please log in using Office365.", 401
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Check if the user exists
+    cursor.execute("SELECT * FROM users WHERE email = %s", (user_email,))
+    user = cursor.fetchone()
+
+    if not user:
+        # If the user does not exist, insert them with the default role "basic"
+        cursor.execute("INSERT INTO users (email, name, role_id) VALUES (%s, %s, %s)", 
+                       (user_email, user_email.split('@')[0], 0))  # Default role_id = 0 (Basic User)
+        conn.commit()
+
+    cursor.close()
+    conn.close()
+    
     return render_template("index.html")
+
 @app.route("/adminpanel.html", methods=["GET"])
 def admin_panel():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT name AS username, role_id AS access_level FROM users")
+        # Fetch users with correct column names
+        cursor.execute("SELECT name, email, role_id FROM users")
         users = cursor.fetchall()
         cursor.close()
         conn.close()
     except Exception as e:
-        # This will display the error message to help you debug
         return f"Error fetching users: {str(e)}", 500
+    
     return render_template("adminpanel.html", users=users)
 
 @app.route("/update-user", methods=["POST"])
 def update_user():
-    # Get form data
-    username = request.form.get("username")      # This should match the user's email from the form
-    new_access_level = request.form.get("access_level")  # e.g., "basic" or "administrator"
+    email = request.form.get("username")  # Email instead of username
+    new_access_level = request.form.get("access_level")
 
-    # Map the access level string to an integer value
-    role_map = {
-        "basic": 0,
-        "administrator": 1
-    }
-    new_role_id = role_map.get(new_access_level, 0)  # Defaults to 0 if not found
+    # Map role names to role IDs
+    role_map = {"basic": 0, "administrator": 1}
+    new_role_id = role_map.get(new_access_level, 0)  # Default to "basic"
 
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # Update the user's access level in the database using the integer value.
-        update_query = "UPDATE users SET role_id = %s WHERE email = %s"
-        cursor.execute(update_query, (new_role_id, username))
-        
+        # Update the user's role
+        cursor.execute("UPDATE users SET role_id = %s WHERE email = %s", (new_role_id, email))
         conn.commit()
         cursor.close()
         conn.close()
 
-        return "User changed successfully"
+        return "User role updated successfully."
     except Exception as e:
         return f"Error updating user: {str(e)}", 500
+
 
 # Processes the form submission from the landing page
 @app.route("/apply", methods=["POST"])
