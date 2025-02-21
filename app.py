@@ -118,19 +118,6 @@ def apply():
     except mysql.connector.Error as err:
         return f"Database Error: {err}", 500
 
-if __name__ == "__main__":
-    app.run()
-
-@app.route("/login")
-def login():
-    # Create a Microsoft Authentication Library (MSAL) client
-    msal_app = msal.ConfidentialClientApplication(
-        CLIENT_ID, authority=AUTHORITY, client_credential=CLIENT_SECRET
-    )
-    # Generate the auth URL
-    auth_url = msal_app.get_authorization_request_url(SCOPE, redirect_uri=url_for("callback", _external=True))
-    return redirect(auth_url)
-
 @app.route("/login/callback")
 def callback():
     # Handle the callback from Azure AD
@@ -156,14 +143,19 @@ def callback():
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+
+            # Check if the user already exists
+            cursor.execute("SELECT user_id FROM users WHERE email = %s", (email,))
             user = cursor.fetchone()
 
             if not user:
                 # Insert new user into the database
                 cursor.execute(
-                    "INSERT INTO users (email, name, role_id) VALUES (%s, %s, %s)",
-                    (email, name, 0),  # Default role_id is 0 (basic user)
+                    """
+                    INSERT INTO users (name, email, role_id, status)
+                    VALUES (%s, %s, %s, %s)
+                    """,
+                    (name, email, 2, "active"),  # Default role_id=2 (basicuser), status=active
                 )
                 conn.commit()
 
@@ -176,3 +168,6 @@ def callback():
         return redirect(url_for("home"))
     else:
         return "Login failed", 401
+
+if __name__ == "__main__":
+    app.run()
