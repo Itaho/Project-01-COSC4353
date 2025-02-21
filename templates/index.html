@@ -41,23 +41,6 @@
       opacity: 0.9;
     }
 
-    /* Login button styling */
-    .login-button {
-      position: fixed;
-      top: 60px; /* Positioned below the admin button */
-      right: 10px;
-      background-color: #0078d4; /* Microsoft blue */
-      color: #fff;
-      padding: 10px 20px;
-      text-decoration: none;
-      border-radius: 5px;
-      font-family: Arial, sans-serif;
-    }
-
-    .login-button:hover {
-      opacity: 0.9;
-    }
-
     .container {
       width: 90%;
       max-width: 500px;
@@ -109,10 +92,6 @@
 <body>
   <!-- Administrator Panel button -->
   <a href="adminpanel.html" class="admin-button">Administrator Panel</a>
-
-  <!-- Login with Office 365 button -->
-  <a href="{{ url_for('login') }}" class="login-button">Login with Office 365</a>
-
   <div class="container">
     <h1>Welcome to Project MooseFactory</h1>
     <p>
