@@ -1,8 +1,9 @@
 import os
 import mysql.connector
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, render_template, redirect, url_for, session
 
 app = Flask(__name__)
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "default_secret_key")
 
 DB_HOST = os.getenv("DB_HOST", "moosefactorydb.mysql.database.azure.com")
 DB_PORT = int(os.getenv("DB_PORT", 3306))
@@ -31,6 +32,36 @@ def execute_sql_file(cursor, filename):
             cursor.execute(statement)
             if statement.lower().startswith("select"):
                 cursor.fetchall()
+
+@app.before_request
+def add_user_to_db():
+    # Check if user info is in session (adjust keys based on your auth setup)
+    if 'user' in session:
+        email = session['user'].get('email')  # Adjust to match your session keys
+        name = session['user'].get('name')
+        
+        if not email or not name:
+            return  # Skip if data is missing
+        
+        conn = None
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            # Check if user exists
+            cursor.execute("SELECT email FROM users WHERE email = %s", (email,))
+            if not cursor.fetchone():
+                # Insert new user with default role_id (basicuser)
+                cursor.execute("INSERT INTO users (name, email) VALUES (%s, %s)", (name, email))
+                conn.commit()
+        except mysql.connector.Error as err:
+            app.logger.error(f"Database error: {err}")
+            if conn:
+                conn.rollback()
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()               
 
 #Initializes database connection
 @app.route("/init-db")
@@ -70,36 +101,29 @@ def admin_panel():
 @app.route("/update-user", methods=["POST"])
 def update_user():
     # Get form data
-    username = request.form.get("username")      # The user's email from the form
-    new_access_level = request.form.get("access_level")  # "basic" or "administrator"
+    username = request.form.get("username")      # This should match the user's email from the form
+    new_access_level = request.form.get("access_level")  # e.g., "basic" or "administrator"
 
-    # Map access level strings to integer role IDs (adjust as needed)
+    # Map the access level string to an integer value
     role_map = {
         "basic": 0,
         "administrator": 1
     }
-    new_role_id = role_map.get(new_access_level, 0)
+    new_role_id = role_map.get(new_access_level, 0)  # Defaults to 0 if not found
 
     try:
-        # 1. Update the user's role
         conn = get_db_connection()
         cursor = conn.cursor()
+        
+        # Update the user's access level in the database using the integer value.
         update_query = "UPDATE users SET role_id = %s WHERE email = %s"
         cursor.execute(update_query, (new_role_id, username))
+        
         conn.commit()
         cursor.close()
         conn.close()
 
-        # 2. Re-fetch all users so the updated data is shown
-        conn2 = get_db_connection()
-        cursor2 = conn2.cursor(dictionary=True)
-        cursor2.execute("SELECT email AS username, role_id AS access_level FROM users")
-        users = cursor2.fetchall()
-        cursor2.close()
-        conn2.close()
-
-        # 3. Re-render the admin panel with a success message
-        return render_template("adminpanel.html", users=users, success_msg="User changed successfully!")
+        return "User changed successfully"
     except Exception as e:
         return f"Error updating user: {str(e)}", 500
 
@@ -124,6 +148,57 @@ def apply():
         return render_template("thankyou.html")
     except mysql.connector.Error as err:
         return f"Database Error: {err}", 500
+'''
+@app.route("/login/callback")
+def callback():
+    # Handle the callback from Azure AD
+    msal_app = msal.ConfidentialClientApplication(
+        CLIENT_ID, authority=AUTHORITY, client_credential=CLIENT_SECRET
+    )
+    result = msal_app.acquire_token_by_authorization_code(
+        request.args["code"], scopes=SCOPE, redirect_uri=url_for("callback", _external=True)
+    )
 
+    if "access_token" in result:
+        # Fetch user details from Microsoft Graph
+        graph_data = requests.get(
+            "https://graph.microsoft.com/v1.0/me",
+            headers={"Authorization": f"Bearer {result['access_token']}"},
+        ).json()
+
+        # Extract user details
+        email = graph_data.get("mail") or graph_data.get("userPrincipalName")
+        name = graph_data.get("displayName")
+
+        # Add user to the database if they don't already exist
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+
+            # Check if the user already exists
+            cursor.execute("SELECT user_id FROM users WHERE email = %s", (email,))
+            user = cursor.fetchone()
+
+            if not user:
+                # Insert new user into the database
+                cursor.execute(
+                    """
+                    INSERT INTO users (name, email, role_id, status)
+                    VALUES (%s, %s, %s, %s)
+                    """,
+                    (name, email, 2, "active"),  # Default role_id=2 (basicuser), status=active
+                )
+                conn.commit()
+
+            cursor.close()
+            conn.close()
+        except Exception as e:
+            return f"Error adding user to database: {str(e)}", 500
+
+        # Redirect to home or admin panel
+        return redirect(url_for("home"))
+    else:
+        return "Login failed", 401
+'''
 if __name__ == "__main__":
     app.run()
