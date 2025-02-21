@@ -120,3 +120,59 @@ def apply():
 
 if __name__ == "__main__":
     app.run()
+
+@app.route("/login")
+def login():
+    # Create a Microsoft Authentication Library (MSAL) client
+    msal_app = msal.ConfidentialClientApplication(
+        CLIENT_ID, authority=AUTHORITY, client_credential=CLIENT_SECRET
+    )
+    # Generate the auth URL
+    auth_url = msal_app.get_authorization_request_url(SCOPE, redirect_uri=url_for("callback", _external=True))
+    return redirect(auth_url)
+
+@app.route("/login/callback")
+def callback():
+    # Handle the callback from Azure AD
+    msal_app = msal.ConfidentialClientApplication(
+        CLIENT_ID, authority=AUTHORITY, client_credential=CLIENT_SECRET
+    )
+    result = msal_app.acquire_token_by_authorization_code(
+        request.args["code"], scopes=SCOPE, redirect_uri=url_for("callback", _external=True)
+    )
+
+    if "access_token" in result:
+        # Fetch user details from Microsoft Graph
+        graph_data = requests.get(
+            "https://graph.microsoft.com/v1.0/me",
+            headers={"Authorization": f"Bearer {result['access_token']}"},
+        ).json()
+
+        # Extract user details
+        email = graph_data.get("mail") or graph_data.get("userPrincipalName")
+        name = graph_data.get("displayName")
+
+        # Add user to the database if they don't already exist
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+            user = cursor.fetchone()
+
+            if not user:
+                # Insert new user into the database
+                cursor.execute(
+                    "INSERT INTO users (email, name, role_id) VALUES (%s, %s, %s)",
+                    (email, name, 0),  # Default role_id is 0 (basic user)
+                )
+                conn.commit()
+
+            cursor.close()
+            conn.close()
+        except Exception as e:
+            return f"Error adding user to database: {str(e)}", 500
+
+        # Redirect to home or admin panel
+        return redirect(url_for("home"))
+    else:
+        return "Login failed", 401
