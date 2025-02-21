@@ -1,6 +1,7 @@
-import os
+import os, jwt
 import mysql.connector
 from flask import Flask, request, render_template, redirect, url_for, session
+from functools import wraps
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "default_secret_key")
@@ -32,6 +33,41 @@ def execute_sql_file(cursor, filename):
             cursor.execute(statement)
             if statement.lower().startswith("select"):
                 cursor.fetchall()
+
+def get_ms_user():
+    """Extract user from Microsoft Identity headers"""
+    def decorator(f):
+        @wraps(f)
+        def wrapped(*args, **kwargs):
+            if 'X-MS-CLIENT-PRINCIPAL' in request.headers:
+                encoded_user = request.headers['X-MS-CLIENT-PRINCIPAL']
+                user = jwt.decode(encoded_user, verify=False)
+                session['user'] = {
+                    'name': user['name'],
+                    'email': user['preferred_username']
+                }
+                
+                # DATABASE INSERTION HERE
+                conn = None
+                try:
+                    conn = get_db_connection()
+                    cursor = conn.cursor()
+                    cursor.execute("""
+                        INSERT INTO users (name, email, role_id)
+                        VALUES (%s, %s, 2)
+                        ON DUPLICATE KEY UPDATE
+                        name = VALUES(name), role_id = VALUES(role_id)
+                    """, (user['name'], user['preferred_username']))
+                    conn.commit()
+                except mysql.connector.Error as err:
+                    app.logger.error(f"DB Error: {err}")
+                finally:
+                    if conn:
+                        conn.close()
+            
+            return f(*args, **kwargs)
+        return wrapped
+    return decorator
 
 @app.before_request
 def add_user_to_db():
@@ -82,9 +118,11 @@ def init_db():
         return f"SQL Execution Error: {err}", 500
 
 @app.route("/", methods=["GET"])
+@get_ms_user
 def home():
     return render_template("index.html")
 @app.route("/adminpanel.html", methods=["GET"])
+@get_ms_user
 def admin_panel():
     try:
         conn = get_db_connection()
@@ -155,57 +193,6 @@ def apply():
         return render_template("thankyou.html")
     except mysql.connector.Error as err:
         return f"Database Error: {err}", 500
-'''
-@app.route("/login/callback")
-def callback():
-    # Handle the callback from Azure AD
-    msal_app = msal.ConfidentialClientApplication(
-        CLIENT_ID, authority=AUTHORITY, client_credential=CLIENT_SECRET
-    )
-    result = msal_app.acquire_token_by_authorization_code(
-        request.args["code"], scopes=SCOPE, redirect_uri=url_for("callback", _external=True)
-    )
 
-    if "access_token" in result:
-        # Fetch user details from Microsoft Graph
-        graph_data = requests.get(
-            "https://graph.microsoft.com/v1.0/me",
-            headers={"Authorization": f"Bearer {result['access_token']}"},
-        ).json()
-
-        # Extract user details
-        email = graph_data.get("mail") or graph_data.get("userPrincipalName")
-        name = graph_data.get("displayName")
-
-        # Add user to the database if they don't already exist
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
-
-            # Check if the user already exists
-            cursor.execute("SELECT user_id FROM users WHERE email = %s", (email,))
-            user = cursor.fetchone()
-
-            if not user:
-                # Insert new user into the database
-                cursor.execute(
-                    """
-                    INSERT INTO users (name, email, role_id, status)
-                    VALUES (%s, %s, %s, %s)
-                    """,
-                    (name, email, 2, "active"),  # Default role_id=2 (basicuser), status=active
-                )
-                conn.commit()
-
-            cursor.close()
-            conn.close()
-        except Exception as e:
-            return f"Error adding user to database: {str(e)}", 500
-
-        # Redirect to home or admin panel
-        return redirect(url_for("home"))
-    else:
-        return "Login failed", 401
-'''
 if __name__ == "__main__":
     app.run()
