@@ -1,6 +1,7 @@
 import os
 import mysql.connector
-from flask import Flask, request, render_template, redirect, url_for, session
+from flask import Flask, request, render_template, redirect, url_for, session, flash
+from werkzeug.security import check_password_hash  # For password verification
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "default_secret_key")
@@ -35,33 +36,40 @@ def execute_sql_file(cursor, filename):
 
 @app.before_request
 def add_user_to_db():
-    # Check if user info is in session (adjust keys based on your auth setup)
-    if 'user' in session:
-        email = session['user'].get('email')  # Adjust to match your session keys
-        name = session['user'].get('name')
+    # First check if 'user' exists in session
+    if 'user' not in session:
+        return
+    
+    # Then verify the user data is valid
+    user_data = session.get('user')
+    if not user_data or not isinstance(user_data, dict):
+        return
         
-        if not email or not name:
-            return  # Skip if data is missing
-        
-        conn = None
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            # Check if user exists
-            cursor.execute("SELECT email FROM users WHERE email = %s", (email,))
-            if not cursor.fetchone():
-                # Insert new user with default role_id (basicuser)
-                cursor.execute("INSERT INTO users (name, email) VALUES (%s, %s)", (name, email))
-                conn.commit()
-        except mysql.connector.Error as err:
-            app.logger.error(f"Database error: {err}")
-            if conn:
-                conn.rollback()
-        finally:
-            if cursor:
-                cursor.close()
-            if conn:
-                conn.close()               
+    # Ensure required fields exist
+    required_fields = ['email', 'name']  # adjust based on your user data structure
+    if not all(field in user_data for field in required_fields):
+        return
+    
+    # Proceed with adding user to database
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        # Check if user exists
+        cursor.execute("SELECT email FROM users WHERE email = %s", (user_data['email'],))
+        if not cursor.fetchone():
+            # Insert new user with default role_id (basicuser)
+            cursor.execute("INSERT INTO users (name, email) VALUES (%s, %s)", (user_data['name'], user_data['email']))
+            conn.commit()
+    except mysql.connector.Error as err:
+        app.logger.error(f"Database error: {err}")
+        if conn:
+            conn.rollback()
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()               
 
 #Initializes database connection
 @app.route("/init-db")
@@ -84,19 +92,16 @@ def init_db():
 @app.route("/", methods=["GET"])
 def home():
     return render_template("index.html")
-@app.route("/adminpanel.html", methods=["GET"])
+@app.route('/admin')
 def admin_panel():
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT email AS username, role_id AS access_level FROM users")
-        users = cursor.fetchall()
-        cursor.close()
-        conn.close()
-    except Exception as e:
-        # This will display the error message to help you debug
-        return f"Error fetching users: {str(e)}", 500
-    return render_template("adminpanel.html", users=users)
+    # Fetch all users from the database
+    all_users = users.find({})  # If using MongoDB
+    # If using MySQL:
+    # cursor = mysql.connection.cursor()
+    # cursor.execute("SELECT name, email, role_id FROM users")
+    # all_users = cursor.fetchall()
+    
+    return render_template('adminpanel.html', users=all_users)
 
 @app.route("/update-user", methods=["POST"])
 def update_user():
@@ -155,6 +160,49 @@ def apply():
         return render_template("thankyou.html")
     except mysql.connector.Error as err:
         return f"Database Error: {err}", 500
+
+# Basic email/password login route
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        user_data = {
+            'email': request.form.get('email'),
+            'name': request.form.get('name')
+        }
+        
+        # Store user data in session
+        session['user'] = user_data
+        
+        # Redirect to homepage or dashboard
+        return redirect(url_for('index'))  # or whatever your home route is
+        
+    return render_template('login.html')
+
+# Google OAuth callback route
+@app.route('/oauth/callback')
+def oauth_callback():
+    # Get the authorization code from Google
+    code = request.args.get('code')
+    
+    try:
+        # Exchange code for tokens (implementation depends on your OAuth library)
+        token_response = get_google_tokens(code)  # You'll need to implement this
+        
+        # Get user info from Google
+        user_info = get_google_user_info(token_response)  # You'll need to implement this
+        
+        # Set session variables
+        session['user'] = {
+            'email': user_info['email'],
+            'name': user_info['name'],
+            'id': user_info.get('sub')  # Google's unique user ID
+        }
+        
+        return redirect(url_for('dashboard'))
+        
+    except Exception as e:
+        flash('Failed to log in with Google')
+        return redirect(url_for('login_page'))
 
 if __name__ == "__main__":
     app.run()
