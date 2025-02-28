@@ -92,7 +92,13 @@ def init_db():
 @app.route("/", methods=["GET"])
 def home():
     return render_template("index.html")
+<<<<<<< HEAD
 @app.route('/admin')
+=======
+
+
+@app.route('/adminpanel')  # Note: using /adminpanel instead of /adminpanel.html
+>>>>>>> e5fa8cc (Revert "Merge pull request #3 from Itaho/main")
 def admin_panel():
     # Fetch all users from the database
     all_users = users.find({})  # If using MongoDB
@@ -204,5 +210,21 @@ def oauth_callback():
         flash('Failed to log in with Google')
         return redirect(url_for('login_page'))
 
+<<<<<<< HEAD
 if __name__ == "__main__":
     app.run()
+=======
+# Basic error handler for 500 errors
+@app.errorhandler(500)
+def internal_error(error):
+    return render_template('error.html'), 500
+
+# Basic error handler for 404 errors
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template('error.html'), 404
+
+if __name__ == '__main__':
+    # Run the app in debug mode during development
+    app.run(debug=True)
+>>>>>>> e5fa8cc (Revert "Merge pull request #3 from Itaho/main")
