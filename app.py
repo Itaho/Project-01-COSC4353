@@ -1,12 +1,7 @@
 import os
 import mysql.connector
-<<<<<<< HEAD
 from flask import Flask, request, render_template, redirect, url_for, session, flash
 from werkzeug.security import check_password_hash  # For password verification
-=======
-from flask import Flask, request, render_template, redirect, url_for, session
-from flask_mysqldb import MySQL  # If using MySQL
->>>>>>> 125169b (Updated code for testing)
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "default_secret_key")
@@ -97,36 +92,26 @@ def init_db():
 @app.route("/", methods=["GET"])
 def home():
     return render_template("index.html")
-<<<<<<< HEAD
-@app.route('/admin')
-def admin_panel():
-    # Fetch all users from the database
-    all_users = users.find({})  # If using MongoDB
-    # If using MySQL:
-    # cursor = mysql.connection.cursor()
-    # cursor.execute("SELECT name, email, role_id FROM users")
-    # all_users = cursor.fetchall()
-    
-    return render_template('adminpanel.html', users=all_users)
-=======
 
-@app.route('/adminpanel')  # Note: using /adminpanel instead of /adminpanel.html
+@app.route('/adminpanel')  # This matches the URL you're trying to access
 def admin_panel():
     # Check if user is logged in and is an admin
     if 'user' not in session:
         return redirect(url_for('login'))
     
-    # If using MySQL:
-    cursor = mysql.connection.cursor()
-    cursor.execute("SELECT name, email, role_id FROM users")
-    users = cursor.fetchall()
-    cursor.close()
-    
-    # If using MongoDB:
-    # users = list(users_collection.find({}))
-    
-    return render_template('adminpanel.html', users=users)
->>>>>>> 125169b (Updated code for testing)
+    try:
+        # Get users from database
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)  # Use dictionary cursor for named columns
+        cursor.execute("SELECT name, email, role_id FROM users")
+        users = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        return render_template('adminpanel.html', users=users)
+    except Exception as e:
+        flash(f"Error accessing database: {str(e)}")
+        return redirect(url_for('home'))
 
 @app.route("/update-user", methods=["POST"])
 def update_user():
