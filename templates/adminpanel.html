@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Admin Panel - Project MooseFactory</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -51,25 +52,42 @@
   <div class="container">
     <h1>Admin Panel</h1>
     <p>Manage user access levels below:</p>
-    <form action="/update-user" method="POST">
-        <label for="userSelect">Select User:</label>
-        <select id="userSelect" name="email">
-          {% for user in users %}
-            <option value="{{ user.email }}">
-              {{ user.name }} ({{ user.email }}) - Role: {{ user.role_id }}
-            </option>
-          {% endfor %}
-        </select>
-      
-        <label for="roleId">Change Role:</label>
-        <select id="roleId" name="role_id">
-          <option value="2">Basic User</option>
-          <option value="1">Administrator</option>
-        </select>
-      
-        <button type="submit">Update Role</button>
-    </form>
     
+    {% if users %}
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Current Role</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+        <tr>
+          <td>{{ user.name }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ "Admin" if user.role_id == 1 else "Basic User" }}</td>
+          <td>
+            <form action="{{ url_for('update_user') }}" method="POST">
+              <input type="hidden" name="username" value="{{ user.email }}">
+              <select name="access_level">
+                <option value="basic" {% if user.role_id == 0 %}selected{% endif %}>Basic User</option>
+                <option value="administrator" {% if user.role_id == 1 %}selected{% endif %}>Administrator</option>
+              </select>
+              <button type="submit">Update</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p>No users found.</p>
+    {% endif %}
+    
+    <a href="{{ url_for('home') }}" class="btn">Back to Home</a>
   </div>
 </body>
 </html>
