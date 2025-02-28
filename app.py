@@ -2,9 +2,17 @@ import os
 import mysql.connector
 from flask import Flask, request, render_template, redirect, url_for, session, flash
 from werkzeug.security import check_password_hash  # For password verification
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-app.secret_key = os.getenv("FLASK_SECRET_KEY", "default_secret_key")
+
+# Configure the SQLAlchemy database URI
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///users.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
+
+# Initialize SQLAlchemy
+db = SQLAlchemy(app)
 
 DB_HOST = os.getenv("DB_HOST", "moosefactorydb.mysql.database.azure.com")
 DB_PORT = int(os.getenv("DB_PORT", 3306))
@@ -93,7 +101,7 @@ def init_db():
 def home():
     return render_template("index.html")
 
-@app.route('/adminpanel')  # This matches the URL you're trying to access
+@app.route('/adminpanel')
 def admin_panel():
     # Check if user is logged in and is an admin
     if 'user' not in session:
@@ -102,7 +110,7 @@ def admin_panel():
     try:
         # Get users from database
         conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)  # Use dictionary cursor for named columns
+        cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT name, email, role_id FROM users")
         users = cursor.fetchall()
         cursor.close()
@@ -214,5 +222,19 @@ def oauth_callback():
         flash('Failed to log in with Google')
         return redirect(url_for('login_page'))
 
-if __name__ == "__main__":
-    app.run()
+# Basic error handler for 500 errors
+@app.errorhandler(500)
+def internal_error(error):
+    return render_template('error.html'), 500
+
+# Basic error handler for 404 errors
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template('error.html'), 404
+
+if __name__ == '__main__':
+    # Ensure all database tables are created
+    with app.app_context():
+        db.create_all()
+    # Run the app in debug mode during development
+    app.run(debug=True)
