@@ -87,42 +87,22 @@
     button:hover {
       opacity: 0.9;
     }
-
-    .login-button {
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      background-color: #0078d4; /* Microsoft blue */
-      color: #fff;
-      padding: 10px 20px;
-      text-decoration: none;
-      border-radius: 5px;
-      font-family: Arial, sans-serif;
-    }
-
-    .login-button:hover {
-      opacity: 0.9;
-    }
   </style>
 </head>
 <body>
-    <!-- Login button -->
-    <a href="/auth/microsoft" class="login-button">Login with Office 365</a>
-
-    <!-- Administrator Panel button -->
-    <a href="adminpanel.html" class="admin-button">Administrator Panel</a>
-
-    <div class="container">
-        <h1>Welcome to Project MooseFactory</h1>
-        <p>
-            This is a work in progress app. If you'd like to apply to help, please fill in your university email
-            and information below along with a brief explanation on who you are.
-        </p>
-        <form action="/apply" method="post">
-            <input type="email" name="email" placeholder="Your University Email" required>
-            <textarea name="message" rows="5" placeholder="Tell us about yourself" required></textarea>
-            <button type="submit">Submit</button>
-        </form>
-    </div>
+  <!-- Administrator Panel button -->
+  <a href="adminpanel.html" class="admin-button">Administrator Panel</a>
+  <div class="container">
+    <h1>Welcome to Project MooseFactory</h1>
+    <p>
+      This is a work in progress app. If you'd like to apply to help, please fill in your university email
+      and information below along with a brief explanation on who you are.
+    </p>
+    <form action="/apply" method="post">
+      <input type="email" name="email" placeholder="Your University Email" required>
+      <textarea name="message" rows="5" placeholder="Tell us about yourself" required></textarea>
+      <button type="submit">Submit</button>
+    </form>
+  </div>
 </body>
 </html>

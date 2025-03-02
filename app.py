@@ -1,31 +1,15 @@
 import os
 import mysql.connector
 from flask import Flask, request, render_template, redirect, url_for, session
-import msal
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "default_secret_key")
 
-# Database configuration
 DB_HOST = os.getenv("DB_HOST", "moosefactorydb.mysql.database.azure.com")
 DB_PORT = int(os.getenv("DB_PORT", 3306))
 DB_USER = os.getenv("DB_USER", "moose")
 DB_PASS = os.getenv("DB_PASS", "Moosefactory123")
 DB_NAME = os.getenv("DB_NAME", "moosefactory_sql")
-
-# Microsoft Azure App credentials
-CLIENT_ID = os.getenv("MS_CLIENT_ID", "YOUR_CLIENT_ID")
-CLIENT_SECRET = os.getenv("MS_CLIENT_SECRET", "YOUR_CLIENT_SECRET")
-AUTHORITY = os.getenv("MS_AUTHORITY", "https://login.microsoftonline.com/YOUR_TENANT_ID")
-REDIRECT_PATH = "/auth/microsoft/callback"  # Must match the redirect URI in Azure
-SCOPE = ["User.Read"]  # Permissions to request
-
-# Initialize MSAL client
-msal_client = msal.ConfidentialClientApplication(
-    CLIENT_ID,
-    authority=AUTHORITY,
-    client_credential=CLIENT_SECRET
-)
 
 def get_db_connection():
     return mysql.connector.connect(
@@ -79,7 +63,7 @@ def add_user_to_db():
             if conn:
                 conn.close()               
 
-# Initializes database connection
+#Initializes database connection
 @app.route("/init-db")
 def init_db():
     conn = get_db_connection()
@@ -100,7 +84,6 @@ def init_db():
 @app.route("/", methods=["GET"])
 def home():
     return render_template("index.html")
-
 @app.route("/adminpanel.html", methods=["GET"])
 def admin_panel():
     try:
@@ -172,45 +155,6 @@ def apply():
         return render_template("thankyou.html")
     except mysql.connector.Error as err:
         return f"Database Error: {err}", 500
-
-# Route to initiate Microsoft login
-@app.route("/auth/microsoft")
-def login():
-    auth_url = msal_client.get_authorization_request_url(SCOPE, redirect_uri=url_for("auth_callback", _external=True))
-    return redirect(auth_url)
-
-# Route to handle Microsoft callback
-@app.route("/auth/microsoft/callback")
-def auth_callback():
-    try:
-        # Get the authorization code from the callback
-        code = request.args.get("code")
-        if not code:
-            return "Login failed: No authorization code received.", 400
-
-        # Acquire token using the authorization code
-        result = msal_client.acquire_token_by_authorization_code(code, scopes=SCOPE, redirect_uri=url_for("auth_callback", _external=True))
-        if "access_token" not in result:
-            return "Login failed: No access token received.", 400
-
-        # Use the access token to get user info
-        graph_data = msal_client.acquire_token_for_user(result["access_token"])
-        if "error" in graph_data:
-            return f"Login failed: {graph_data['error_description']}", 400
-
-        # Extract user info
-        user_name = graph_data.get("displayName")
-        user_email = graph_data.get("mail") or graph_data.get("userPrincipalName")
-
-        # Save user to session
-        if user_name and user_email:
-            session["user"] = {"name": user_name, "email": user_email}
-            return redirect(url_for("home"))
-        else:
-            return "Login failed: Unable to retrieve user information.", 400
-
-    except Exception as e:
-        return f"Login failed: {str(e)}", 500
 
 if __name__ == "__main__":
     app.run()
