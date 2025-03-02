@@ -17,7 +17,7 @@ DB_NAME = os.getenv("DB_NAME", "moosefactory_sql")
 CLIENT_ID = os.getenv("MS_CLIENT_ID", "e6db8f7f-6fb1-4845-9d9d-df9f7b68cbb7")
 CLIENT_SECRET = os.getenv("MS_CLIENT_SECRET", "5c7bfd46-2852-4781-83c8-d28be25ab885")
 AUTHORITY = os.getenv("MS_AUTHORITY", "https://login.microsoftonline.com/170bbabd-a2f0-4c90-ad4b-0e8f0f0c4259")
-REDIRECT_PATH = "/auth/microsoft/callback"  # Must match the redirect URI in Azure
+REDIRECT_PATH = "https://moosefactoryusermanagment-dkbeg8ecagceahcx.centralus-01.azurewebsites.net/.auth/login/aad/callback"  # Must match the redirect URI in Azure
 SCOPE = ["User.Read"]  # Permissions to request
 
 # Initialize MSAL client
