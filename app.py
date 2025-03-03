@@ -1,9 +1,37 @@
 import os
 import mysql.connector
+import json
+import base64
 from flask import Flask, request, render_template, redirect, url_for, session
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "default_secret_key")
+
+@app.before_request
+def parse_easy_auth_headers():
+    principal_header = request.headers.get('X-MS-CLIENT-PRINCIPAL')
+    if principal_header:
+        # Decode from Base64
+        decoded = base64.b64decode(principal_header).decode('utf-8')
+        # Parse the JSON
+        principal_data = json.loads(decoded)
+
+        # Find email in claims
+        claims = principal_data.get("claims", [])
+        email = None
+        name = None
+
+        for c in claims:
+            if c.get("typ") == "preferred_username":
+                email = c.get("val")
+            elif c.get("typ") == "name":
+                name = c.get("val")
+        
+        # Store in session so we can use it anywhere else in the app
+        session["user"] = {"email": email, "name": name}
+    else:
+        # If header isn't present, clear user info
+        session.pop("user", None)
 
 DB_HOST = os.getenv("DB_HOST", "moosefactorydb.mysql.database.azure.com")
 DB_PORT = int(os.getenv("DB_PORT", 3306))
@@ -35,33 +63,31 @@ def execute_sql_file(cursor, filename):
 
 @app.before_request
 def add_user_to_db():
-    # Check if user info is in session (adjust keys based on your auth setup)
-    if 'user' in session:
-        email = session['user'].get('email')  # Adjust to match your session keys
-        name = session['user'].get('name')
-        
-        if not email or not name:
-            return  # Skip if data is missing
-        
-        conn = None
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            # Check if user exists
-            cursor.execute("SELECT email FROM users WHERE email = %s", (email,))
-            if not cursor.fetchone():
-                # Insert new user with default role_id (basicuser)
-                cursor.execute("INSERT INTO users (name, email) VALUES (%s, %s)", (name, email))
-                conn.commit()
-        except mysql.connector.Error as err:
-            app.logger.error(f"Database error: {err}")
-            if conn:
+    # First, parse the Easy Auth header (the function above).
+    parse_easy_auth_headers()
+
+    # Now see if session["user"] is set.
+    user_info = session.get("user")
+    if user_info:
+        email = user_info.get("email")
+        name = user_info.get("name")
+
+        if email and name:
+            try:
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                cursor.execute("SELECT email FROM users WHERE email = %s", (email,))
+                existing_user = cursor.fetchone()
+
+                if not existing_user:
+                    cursor.execute("INSERT INTO users (email, name) VALUES (%s, %s)", (email, name))
+                    conn.commit()
+            except mysql.connector.Error as err:
+                app.logger.error(f"Database error: {err}")
                 conn.rollback()
-        finally:
-            if cursor:
+            finally:
                 cursor.close()
-            if conn:
-                conn.close()               
+                conn.close()           
 
 #Initializes database connection
 @app.route("/init-db")
