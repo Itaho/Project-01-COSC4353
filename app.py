@@ -135,18 +135,18 @@ def admin_panel():
 @app.route("/update-user", methods=["POST"])
 def update_user():
     # Get form data
-    username = request.form.get("username")      # The user's email from the form
-    new_access_level = request.form.get("access_level")  # "basic" or "administrator"
+    username = request.form.get("username")
+    new_access_level = request.form.get("access_level")
 
-    # Map access level strings to integer role IDs (adjust as needed)
+    # Map access level strings to integer role IDs
     role_map = {
-        "basic": 2,        # matches 'basicuser' role_id in default_dataset.sql
-        "administrator": 1  # matches 'admin' role_id in default_dataset.sql
+        "basic": 2,        # matches 'basicuser' role_id
+        "administrator": 1  # matches 'admin' role_id
     }
     
     try:
         conn = get_db_connection()
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)  # Changed to dictionary cursor
         
         # Update the user's role
         update_query = "UPDATE users SET role_id = %s WHERE email = %s"
@@ -167,7 +167,8 @@ def update_user():
         cursor.close()
         conn.close()
 
-        return render_template("adminpanel.html", users=users, success_msg="User role updated successfully!")
+        # Redirect back to admin panel with updated data
+        return redirect(url_for('admin_panel'))
     except Exception as e:
         return f"Error updating user: {str(e)}", 500
 
