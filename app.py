@@ -115,7 +115,15 @@ def admin_panel():
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT email AS username, role_id AS access_level FROM users")
+        cursor.execute("""
+            SELECT u.email AS username, 
+                   CASE 
+                       WHEN r.role_name = 'admin' THEN 'administrator'
+                       ELSE 'basic'
+                   END AS access_level
+            FROM users u
+            JOIN roles r ON u.role_id = r.role_id
+        """)
         users = cursor.fetchall()
         cursor.close()
         conn.close()
@@ -132,31 +140,34 @@ def update_user():
 
     # Map access level strings to integer role IDs (adjust as needed)
     role_map = {
-        "basic": 0,
-        "administrator": 1
+        "basic": 2,        # matches 'basicuser' role_id in default_dataset.sql
+        "administrator": 1  # matches 'admin' role_id in default_dataset.sql
     }
-    new_role_id = role_map.get(new_access_level, 0)
-
+    
     try:
-        # 1. Update the user's role
         conn = get_db_connection()
         cursor = conn.cursor()
+        
+        # Update the user's role
         update_query = "UPDATE users SET role_id = %s WHERE email = %s"
-        cursor.execute(update_query, (new_role_id, username))
+        cursor.execute(update_query, (role_map[new_access_level], username))
         conn.commit()
+        
+        # Re-fetch all users with role information
+        cursor.execute("""
+            SELECT u.email AS username, 
+                   CASE 
+                       WHEN r.role_name = 'admin' THEN 'administrator'
+                       ELSE 'basic'
+                   END AS access_level
+            FROM users u
+            JOIN roles r ON u.role_id = r.role_id
+        """)
+        users = cursor.fetchall()
         cursor.close()
         conn.close()
 
-        # 2. Re-fetch all users so the updated data is shown
-        conn2 = get_db_connection()
-        cursor2 = conn2.cursor(dictionary=True)
-        cursor2.execute("SELECT email AS username, role_id AS access_level FROM users")
-        users = cursor2.fetchall()
-        cursor2.close()
-        conn2.close()
-
-        # 3. Re-render the admin panel with a success message
-        return render_template("adminpanel.html", users=users, success_msg="User changed successfully!")
+        return render_template("adminpanel.html", users=users, success_msg="User role updated successfully!")
     except Exception as e:
         return f"Error updating user: {str(e)}", 500
 
