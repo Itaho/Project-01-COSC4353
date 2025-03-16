@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>User Profile - Project MooseFactory</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border: 1px solid #c00;
+            border-radius: 10px;
+        }
+        h1 {
+            color: #c00;
+            margin-bottom: 20px;
+        }
+        .profile-section {
+            margin-bottom: 30px;
+        }
+        .current-signature {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .current-signature img {
+            max-width: 300px;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        .upload-form {
+            margin-top: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #c00;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .error-message {
+            color: #c00;
+            margin-top: 10px;
+        }
+        .success-message {
+            color: #0c0;
+            margin-top: 10px;
+        }
+        .nav-button {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background-color: #c00;
+            color: #fff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+        }
+        
+        .nav-button:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <a href="{{ url_for('home') }}" class="nav-button">Back to Home</a>
+    <div class="container">
+        <h1>User Profile</h1>
+        
+        <div class="profile-section">
+            <h2>Your Information</h2>
+            <p><strong>Name:</strong> {{ user.name }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+        </div>
+
+        <div class="profile-section">
+            <h2>Digital Signature</h2>
+            
+            {% if user.signature_path %}
+            <div class="current-signature">
+                <h3>Current Signature</h3>
+                <img src="{{ url_for('static', filename=user.signature_path) }}" alt="Your signature">
+            </div>
+            {% endif %}
+
+            <div class="upload-form">
+                <h3>Upload New Signature</h3>
+                <form action="{{ url_for('upload_signature') }}" method="POST" enctype="multipart/form-data">
+                    <label for="signature">Select signature image (PNG, JPG only)</label>
+                    <input type="file" id="signature" name="signature" accept=".png,.jpg,.jpeg" required>
+                    <button type="submit">Upload Signature</button>
+                </form>
+                
+                {% if error %}
+                <p class="error-message">{{ error }}</p>
+                {% endif %}
+                
+                {% if success %}
+                <p class="success-message">{{ success }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

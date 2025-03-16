@@ -3,9 +3,23 @@ import mysql.connector
 import json
 import base64
 from flask import Flask, request, render_template, redirect, url_for, session
+from werkzeug.utils import secure_filename
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "default_secret_key")
+
+UPLOAD_FOLDER = 'static/signatures'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Create upload folder if it doesn't exist
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.before_request
 def parse_easy_auth_headers():
@@ -80,14 +94,18 @@ def add_user_to_db():
                 existing_user = cursor.fetchone()
 
                 if not existing_user:
-                    cursor.execute("INSERT INTO users (email, name) VALUES (%s, %s)", (email, name))
+                    # Modified to include signature_path as NULL initially
+                    cursor.execute(
+                        "INSERT INTO users (email, name, signature_path) VALUES (%s, %s, NULL)", 
+                        (email, name)
+                    )
                     conn.commit()
             except mysql.connector.Error as err:
                 app.logger.error(f"Database error: {err}")
                 conn.rollback()
             finally:
                 cursor.close()
-                conn.close()           
+                conn.close()
 
 #Initializes database connection
 @app.route("/init-db")
@@ -115,6 +133,7 @@ def admin_panel():
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
+        # Query joins users and roles tables to get current access levels
         cursor.execute("""
             SELECT u.email AS username, 
                    CASE 
@@ -193,6 +212,79 @@ def apply():
         return render_template("thankyou.html")
     except mysql.connector.Error as err:
         return f"Database Error: {err}", 500
+
+@app.route('/upload-signature', methods=['POST'])
+def upload_signature():
+    if 'signature' not in request.files:
+        return 'No file part', 400
+    
+    file = request.files['signature']
+    if file.filename == '':
+        return 'No selected file', 400
+
+    if file and allowed_file(file.filename):
+        # Create unique filename using timestamp
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = secure_filename(f"{timestamp}_{file.filename}")
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        
+        try:
+            # Save the file
+            file.save(filepath)
+            
+            # Update database with signature path
+            user_info = session.get("user")
+            if user_info and user_info.get("email"):
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                
+                relative_path = os.path.join('signatures', filename)
+                cursor.execute(
+                    "UPDATE users SET signature_path = %s WHERE email = %s",
+                    (relative_path, user_info["email"])
+                )
+                
+                conn.commit()
+                cursor.close()
+                conn.close()
+                
+                return 'File uploaded successfully', 200
+            else:
+                return 'User not authenticated', 401
+                
+        except Exception as e:
+            app.logger.error(f"Error uploading file: {e}")
+            return 'Error uploading file', 500
+            
+    return 'Invalid file type', 400
+
+@app.route("/profile", methods=["GET"])
+def profile():
+    user_info = session.get("user")
+    if not user_info:
+        return redirect(url_for('home'))
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT name, email, signature_path 
+            FROM users 
+            WHERE email = %s
+        """, (user_info["email"],))
+        user = cursor.fetchone()
+        cursor.close()
+        conn.close()
+
+        if not user:
+            return "User not found", 404
+
+        return render_template("profile.html", 
+                            user=user,
+                            error=request.args.get('error'),
+                            success=request.args.get('success'))
+    except Exception as e:
+        return f"Error fetching profile: {str(e)}", 500
 
 if __name__ == "__main__":
     app.run()
