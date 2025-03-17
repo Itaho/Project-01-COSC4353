@@ -47,3 +47,32 @@ CREATE TABLE applications (
 );
 
 -- Add new tables here. I will implement on the front end. 
+
+CREATE TABLE requests (
+    request_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,  -- The user who submitted the request
+    form_type VARCHAR(256) NOT NULL,  -- Type of form (e.g., academic request)
+    status ENUM('draft', 'submitted', 'returned', 'approved', 'pending') DEFAULT 'draft',
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE approvals (
+    approval_id INT AUTO_INCREMENT PRIMARY KEY,
+    request_id INT NOT NULL,  -- The request being approved
+    approver_id INT NOT NULL,  -- The user who is approving the request
+    status ENUM('pending', 'approved', 'returned') DEFAULT 'pending',
+    comments TEXT,  -- Comments from the approver (e.g., why it was returned)
+    approved_at TIMESTAMP,  -- Timestamp when the request was approved
+    FOREIGN KEY (request_id) REFERENCES requests(request_id),
+    FOREIGN KEY (approver_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE documents (
+    document_id INT AUTO_INCREMENT PRIMARY KEY,
+    request_id INT NOT NULL,  -- The request associated with this document
+    document_path VARCHAR(512) NOT NULL,  -- Path to the generated PDF file
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (request_id) REFERENCES requests(request_id)
+);
