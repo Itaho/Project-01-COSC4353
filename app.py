@@ -77,7 +77,7 @@ def execute_sql_file(cursor, filename):
 
 @app.before_request
 def add_user_to_db():
-    # First, parse the Easy Auth header (the function above).
+    # First, parse the Easy Auth header.
     parse_easy_auth_headers()
 
     # Now see if session["user"] is set.
