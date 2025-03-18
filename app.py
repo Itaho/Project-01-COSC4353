@@ -2,7 +2,8 @@ import os
 import mysql.connector
 import json
 import base64
-from flask import Flask, request, render_template, redirect, url_for, session
+import subprocess
+from flask import Flask, request, render_template, redirect, url_for, session, send_file
 from werkzeug.utils import secure_filename
 from datetime import datetime
 
@@ -285,6 +286,69 @@ def profile():
                             success=request.args.get('success'))
     except Exception as e:
         return f"Error fetching profile: {str(e)}", 500
+    
+petitionTemplate = r"""
+\documentclass{{article}}
+\begin{{document}}
+\section*{{Petition Form}}
+
+\textbf{{Name:}} {lname}, {fname} {mname} \\
+\textbf{{Contact Phone Number:}} {phone} \\
+\textbf{{myUH ID:}} {myUH} \\
+\textbf{{UH Email:}} {uhEmail} \\
+\textbf{{Program:}} {program} \\
+\textbf{{Alias:}} {alias} \\
+\textbf{{Purpose of Petition:}} {purpose_of_petition} \\
+\textbf{{Institution Name:}} {institution_name} \\
+\textbf{{City/State/Zip:}} {city_state_zip} \\
+\textbf{{Courses Approved for Transfer:}} {courses_transfer} \\
+\textbf{{Hours Previously Transferred:}} {hours_transferred} \\
+\textbf{{Transfer Credits on this Request:}} {transfer_credits} \\
+\textbf{{Explanation of Request:}} \\
+{explanation}
+
+\end{{document}}
+"""
+
+@app.route('/PetitionSubmit', methods=['POST'])
+def submit():
+    # Retrieve form data
+    form_data = {
+        'fname': request.form.get('fname', ''),
+        'mname': request.form.get('mname', ''),
+        'lname': request.form.get('lname', ''),
+        'phone': request.form.get('phone', ''),
+        'myUH': request.form.get('myUH', ''),
+        'uhEmail': request.form.get('uhEmail', ''),
+        'program': request.form.get('program', ''),
+        'alias': request.form.get('alias', ''),
+        'purpose_of_petition': request.form.get('purpose_of_petition', ''),
+        'institution_name': request.form.get('institution_name', ''),
+        'city_state_zip': request.form.get('city_state_zip', ''),
+        'courses_transfer': request.form.get('courses_transfer', ''),
+        'hours_transferred': request.form.get('hours_transferred', ''),
+        'transfer_credits': request.form.get('transfer_credits', ''),
+        'explanation': request.form.get('explanation', '')
+    }
+    
+    # Fill in the LaTeX template with the form data
+    latex_content = petitionTemplate.format(**form_data)
+    
+    # Save the LaTeX file (e.g., in an output folder)
+    output_dir = os.path.join('output')
+    os.makedirs(output_dir, exist_ok=True)
+    tex_filename = os.path.join(output_dir, 'petition.tex')
+    with open(tex_filename, 'w') as f:
+        f.write(latex_content)
+    
+    # Compile the LaTeX file to PDF using pdflatex
+    try:
+        subprocess.run(['pdflatex', '-output-directory', output_dir, tex_filename], check=True)
+        pdf_filename = os.path.join(output_dir, 'petition.pdf')
+        # Serve the PDF file as a download
+        return send_file(pdf_filename, as_attachment=True)
+    except subprocess.CalledProcessError as e:
+        return f"An error occurred during PDF generation: {e}"
 
 if __name__ == "__main__":
     app.run()

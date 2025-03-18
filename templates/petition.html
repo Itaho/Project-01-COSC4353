@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Petition Form</title>
+    <style>
+      /* Basic reset */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background-color: #ffffff; /* White background */
+        font-family: Arial, sans-serif;
+        color: #333; 
+      }
+
+      /* Container for the form */
+      .container {
+        max-width: 500px;
+        margin: 60px auto;
+        border: 2px solid #cc0000; /* Red border */
+        border-radius: 8px;
+        padding: 20px;
+        background-color: #fff;  /* White form background */
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      }
+
+      /* Heading style */
+      .container h1 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #cc0000; /* Red heading text */
+      }
+
+      label {
+        display: block;
+        margin-top: 15px;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+
+      input[type="text"],
+      input[type="email"],
+      textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+
+      textarea {
+        resize: vertical;
+      }
+
+      input[type="submit"] {
+        margin-top: 20px;
+        width: 100%;
+        padding: 10px;
+        background-color: #cc0000; /* Red button */
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+
+      input[type="submit"]:hover {
+        background-color: #990000; /* Darker red on hover */
+      }
+
+      /* Optional: style for the top nav buttons (My Profile, Admin Panel) if you want them */
+      .top-nav {
+        text-align: right;
+        margin: 10px 20px;
+      }
+
+      .top-nav a {
+        margin-left: 10px;
+        text-decoration: none;
+        color: #cc0000;
+        font-weight: bold;
+      }
+
+      .top-nav a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- Optional top navigation -->
+    <div class="top-nav">
+      <a href="profile.html">My Profile</a>
+      <a href="adminpanel.html">Administrator Panel</a>
+    </div>
+
+    <div class="container">
+      <h1>Graduate Petition Information</h1>
+      <h2>*Optional fields</h2>
+      <form method="POST" action="/PetitionSubmit">
+        <label for="lname">Last Name:</label>
+        <input type="text" id="lname" name="lname" required>
+        
+        <label for="fname">First Name:</label>
+        <input type="text" id="fname" name="fname" required>
+        
+        <label for="mname">Middle Name:</label>
+        <input type="text" id="mname" name="mname">
+        
+        <label for="phone">Contact Phone Number:</label>
+        <input type="text" id="phone" name="phone">
+        
+        <label for="myUH">myUH ID:</label>
+        <input type="text" id="myUH" name="myUH">
+        
+        <label for="uhEmail">University Email:</label>
+        <input type="email" id="uhEmail" name="uhEmail">
+        
+        <label for="program">Program:</label>
+        <input type="text" id="program" name="program">
+        
+        <label for="alias">Alias:</label>
+        <input type="text" id="alias" name="alias">
+        
+        <label for="purpose_of_petition">Purpose of Petition:</label>
+        <input type="text" id="purpose_of_petition" name="purpose_of_petition">
+        
+        <label for="institution_name">Institution Name:</label>
+        <input type="text" id="institution_name" name="institution_name">
+        
+        <label for="city_state_zip">City/State/Zip:</label>
+        <input type="text" id="city_state_zip" name="city_state_zip">
+        
+        <label for="courses_transfer">*Courses Approved for Transfer:</label>
+        <input type="text" id="courses_transfer" name="courses_transfer">
+        
+        <label for="hours_transferred">*Hours Previously Transferred:</label>
+        <input type="text" id="hours_transferred" name="hours_transferred">
+        
+        <label for="transfer_credits">*Transfer Credits on this Request:</label>
+        <input type="text" id="transfer_credits" name="transfer_credits">
+        
+        <label for="explanation">Tell us about yourself / Explanation of Request:</label>
+        <textarea id="explanation" name="explanation" rows="4"></textarea>
+        
+        <input type="submit" value="Submit">
+      </form>
+    </div>
+
+  </body>
+</html>
