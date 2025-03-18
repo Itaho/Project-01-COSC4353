@@ -216,11 +216,11 @@ def apply():
 @app.route('/upload-signature', methods=['POST'])
 def upload_signature():
     if 'signature' not in request.files:
-        return 'No file part', 400
+        return redirect(url_for('profile', error='No file selected'))
     
     file = request.files['signature']
     if file.filename == '':
-        return 'No selected file', 400
+        return redirect(url_for('profile', error='No selected file'))
 
     if file and allowed_file(file.filename):
         # Create unique filename using timestamp
@@ -248,15 +248,16 @@ def upload_signature():
                 cursor.close()
                 conn.close()
                 
-                return 'File uploaded successfully', 200
+                # Return the success template instead of plain text
+                return render_template('upload_success.html')
             else:
-                return 'User not authenticated', 401
+                return redirect(url_for('profile', error='User not authenticated'))
                 
         except Exception as e:
             app.logger.error(f"Error uploading file: {e}")
-            return 'Error uploading file', 500
+            return redirect(url_for('profile', error='Error uploading file'))
             
-    return 'Invalid file type', 400
+    return redirect(url_for('profile', error='Invalid file type'))
 
 @app.route("/profile", methods=["GET"])
 def profile():
@@ -289,4 +290,4 @@ def profile():
 if __name__ == "__main__":
     app.run()
 
-    ##see if this works 
+   
