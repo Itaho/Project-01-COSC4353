@@ -140,7 +140,8 @@ def admin_panel():
                    CASE 
                        WHEN r.role_name = 'admin' THEN 'administrator'
                        ELSE 'basic'
-                   END AS access_level
+                   END AS access_level,
+                   u.status
             FROM users u
             JOIN roles r ON u.role_id = r.role_id
         """)
