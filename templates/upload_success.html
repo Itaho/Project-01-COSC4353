@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Upload Success - Project MooseFactory</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border: 1px solid #c00;
+            border-radius: 10px;
+            margin-top: 50px;
+        }
+        .success-message {
+            color: #0c0;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            background-color: #c00;
+            color: #fff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px;
+        }
+        .button:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Success!</h1>
+        <p class="success-message">File uploaded successfully</p>
+        <a href="{{ url_for('home') }}" class="button">Back to Home</a>
+        <a href="{{ url_for('profile') }}" class="button">Back to Profile</a>
+    </div>
+</body>
+</html>
