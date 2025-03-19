@@ -153,6 +153,61 @@ def admin_panel():
         return f"Error fetching users: {str(e)}", 500
     return render_template("adminpanel.html", users=users)
 
+@app.route("/toggle-status", methods=["POST"])
+def toggle_status():
+    # Checks user's role to see if they are admin
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Query the current user's role
+        cursor.execute("""
+            SELECT r.role_name
+            FROM users u
+            JOIN roles r ON u.role_id = r.role_id
+            WHERE u.email = %s
+        """, (current_user_email,))
+        current_user = cursor.fetchone()
+        
+        # Deny the user request to enable or disable if they are not admin
+        if not current_user or current_user["role_name"] != "admin":
+            cursor.close()
+            conn.close()
+            return "You do not have permission to toggle user status.", 403
+
+        # Retrieves the current status of user
+        cursor.execute("""
+            SELECT status 
+            FROM users 
+            WHERE email = %s
+        """, (user_email_to_toggle,))
+        row = cursor.fetchone()
+        
+        if not row:
+            cursor.close()
+            conn.close()
+            return f"User with email {user_email_to_toggle} does not exist.", 404
+        
+        current_status = row["status"]
+        new_status = "inactive" if current_status == "active" else "active"
+
+        # 4. Update it
+        cursor.execute("""
+            UPDATE users 
+            SET status = %s
+            WHERE email = %s
+        """, (new_status, user_email_to_toggle))
+        conn.commit()
+        
+        cursor.close()
+        conn.close()
+
+    except Exception as e:
+        return f"Error toggling status: {str(e)}", 500
+        
+    return redirect(url_for("admin_panel"))
+
+
 @app.route("/update-user", methods=["POST"])
 def update_user():
     # Get form data
