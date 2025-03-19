@@ -155,6 +155,20 @@ def admin_panel():
 
 @app.route("/toggle-status", methods=["POST"])
 def toggle_status():
+    # Check if user is logged in
+    if "user" not in session:
+        return "You must be logged in to toggle status.", 403
+
+    # Checks email in session
+    current_user_email = session["user"].get("email")
+    if not current_user_email:
+        return "No valid email in session.", 403
+
+    # Checks email needed to be toggled to see if its in database
+    user_email_to_toggle = request.form.get("email")
+    if not user_email_to_toggle:
+        return "User email missing.", 400
+        
     # Checks user's role to see if they are admin
     try:
         conn = get_db_connection()
