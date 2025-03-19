@@ -224,11 +224,15 @@ def toggle_status():
 @app.before_request
 def check_user_status():
     # Makes it so if a user is detected as disabled they see a different page
+    # skips endpoints to avoid infinite loop
+    if request.endpoint in ("disabled_access", "static", "some_logout_route"):
+        return
+        
     # Checks if user is logged in
     user_info = session.get("user")
     if not user_info:
         return
-
+        
     # Get status of user in database
     email = user_info.get("email")
     if not email:
@@ -245,6 +249,8 @@ def check_user_status():
         # If status is inactive show them the disabled page lol
         if row and row["status"] == "inactive":
             return redirect(url_for('disabled_access'))
+    except Exception:
+        pass
 
 @app.route("/disabled")
 def disabled_access():
