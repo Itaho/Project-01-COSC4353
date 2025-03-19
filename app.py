@@ -414,6 +414,9 @@ petitionTemplate = r"""
 
 \end{{document}}
 """
+@app.route('/petition')
+def petition():
+    return render_template('petition.html')
 
 @app.route('/PetitionSubmit', methods=['POST'])
 def submit():
