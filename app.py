@@ -232,6 +232,10 @@ def check_user_status():
         if row and row["status"] == "inactive":
             return redirect(url_for('disabled_access'))
 
+@app.route("/disabled")
+def disabled_access():
+    return render_template("disabled.html")
+
 @app.route("/update-user", methods=["POST"])
 def update_user():
     # Get form data
