@@ -207,6 +207,30 @@ def toggle_status():
         
     return redirect(url_for("admin_panel"))
 
+@app.before_request
+def check_user_status():
+    # Makes it so if a user is detected as disabled they see a different page
+    # Checks if user is logged in
+    user_info = session.get("user")
+    if not user_info:
+        return
+
+    # Get status of user in database
+    email = user_info.get("email")
+    if not email:
+        return
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT status FROM users WHERE email = %s", (email,))
+        row = cursor.fetchone()
+        cursor.close()
+        conn.close()
+
+        # If status is inactive show them the disabled page lol
+        if row and row["status"] == "inactive":
+            return redirect(url_for('disabled_access'))
 
 @app.route("/update-user", methods=["POST"])
 def update_user():
