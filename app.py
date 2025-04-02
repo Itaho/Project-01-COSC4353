@@ -439,7 +439,12 @@ def petition():
 
 @app.route('/PetitionSubmit', methods=['POST'])
 def submit():
-    # Retrieve form data
+    
+    user_info = session.get("user")
+    if not user_info:
+        return "You must be logged in", 403
+
+    # get info for form
     form_data = {
         'fname': request.form.get('fname', ''),
         'mname': request.form.get('mname', ''),
@@ -457,29 +462,25 @@ def submit():
         'transfer_credits': request.form.get('transfer_credits', ''),
         'explanation': request.form.get('explanation', '')
     }
-    
-    # Fill in the LaTeX template with the form data
+
+    # 3. Fill LaTeX template
     latex_content = petitionTemplate.format(**form_data)
-    
-    # Save the LaTeX file (e.g., in an output folder)
+
+    # 4. Write .tex file
     output_dir = os.path.join('output')
     os.makedirs(output_dir, exist_ok=True)
     tex_filename = os.path.join(output_dir, 'petition.tex')
+
     with open(tex_filename, 'w') as f:
         f.write(latex_content)
-    
-    # Compile the LaTeX file to PDF using pdflatex
+
+    # Compile the LaTeX to PDF
     try:
         subprocess.run(['pdflatex', '-output-directory', output_dir, tex_filename], check=True)
-        pdf_filename = os.path.join(output_dir, 'petition.pdf')
-        # Serve the PDF file as a download
-        return send_file(pdf_filename, as_attachment=True)
     except subprocess.CalledProcessError as e:
         return f"An error occurred during PDF generation: {e}"
 
-    user_info = session.get("user")
-    if not user_info:
-        return "You must be logged in", 403
+    pdf_filename = os.path.join(output_dir, 'petition.pdf')
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -494,14 +495,14 @@ def submit():
 
     user_id = user_row["user_id"]
 
-    # insert into requests
+    # Insert the request
     cursor.execute("""
         INSERT INTO requests (user_id, form_type, status)
         VALUES (%s, %s, %s)
     """, (user_id, 'petition', 'submitted'))
     request_id = cursor.lastrowid
 
-    # insert the PDF in documents in db
+    # Insert the PDF path in documents
     cursor.execute("""
         INSERT INTO documents (request_id, document_path)
         VALUES (%s, %s)
@@ -511,7 +512,7 @@ def submit():
     cursor.close()
     conn.close()
 
-    # return PDF back
+    # return pdf
     return send_file(pdf_filename, as_attachment=True)
 
 @app.route("/approve_request", methods=["POST"])
