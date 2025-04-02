@@ -123,12 +123,12 @@
           <td>{{ p.submitted_at }}</td>
           <td>{{ p.req_status }}</td>
           <td>
-            <!-- A link to the PDF if you want to view it -->
+            <!-- A link to the PDF -->
             {% if p.document_path %}
               <a href="/download_pdf/{{ p.request_id }}">View PDF</a>
             {% endif %}
             
-            <!-- Approve/Return if you'd like (see next step) -->
+            <!-- Approve/Return -->
             <form action="{{ url_for('approve_request') }}" method="POST" style="display:inline;">
               <input type="hidden" name="request_id" value="{{ p.request_id }}">
               <button type="submit">Approve</button>
