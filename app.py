@@ -463,30 +463,31 @@ def submit():
 
     latex_content = petitionTemplate.format(**form_data)
 
-    # unique identifier
+    # Generate a unique ID for the file
     unique_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
 
-    # Set the output directory
-    output_dir = os.path.join(os.getcwd(), "output")
+    # Use a persistent folder in /home (which Azure preserves)
+    output_dir = os.path.join(os.environ.get("HOME", "/home"), "output")
     os.makedirs(output_dir, exist_ok=True)
     
-    # Use the unique identifier to create unique filenames for the .tex and .pdf files
     tex_filename = os.path.join(output_dir, f"petition_{unique_id}.tex")
     pdf_filename = os.path.join(output_dir, f"petition_{unique_id}.pdf")
 
     with open(tex_filename, 'w') as f:
         f.write(latex_content)
 
-    # Compile the LaTeX to PDF
     try:
         subprocess.run(['pdflatex', '-output-directory', output_dir, tex_filename], check=True)
     except subprocess.CalledProcessError as e:
         return f"An error occurred during PDF generation: {e}"
 
+    # Verify PDF was created
+    if not os.path.exists(pdf_filename):
+        return f"PDF generation failed: {pdf_filename} not found", 500
+
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    # Find user_id by email
     cursor.execute("SELECT user_id FROM users WHERE email=%s", (user_info["email"],))
     user_row = cursor.fetchone()
     if not user_row:
@@ -502,7 +503,6 @@ def submit():
     """, (user_id, 'petition', 'submitted'))
     request_id = cursor.lastrowid
 
-    # Insert the PDF path in the documents table
     cursor.execute("""
         INSERT INTO documents (request_id, document_path)
         VALUES (%s, %s)
@@ -512,7 +512,6 @@ def submit():
     cursor.close()
     conn.close()
 
-    # Return the PDF file to the user
     return send_file(pdf_filename, as_attachment=True)
 
 @app.route("/download_pdf/<int:request_id>")
@@ -533,6 +532,8 @@ def download_pdf(request_id):
             return f"No PDF found for request_id={request_id}", 404
 
         pdf_path = row["document_path"]
+        if not os.path.exists(pdf_path):
+            return f"PDF file not found on disk: {pdf_path}", 404
 
         return send_file(pdf_path, as_attachment=False)
 
