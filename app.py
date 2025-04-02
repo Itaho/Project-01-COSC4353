@@ -438,12 +438,11 @@ def petition():
 
 @app.route('/PetitionSubmit', methods=['POST'])
 def submit():
-    
     user_info = session.get("user")
     if not user_info:
         return "You must be logged in", 403
 
-    # get info for form
+    # Gather form data
     form_data = {
         'fname': request.form.get('fname', ''),
         'mname': request.form.get('mname', ''),
@@ -462,13 +461,18 @@ def submit():
         'explanation': request.form.get('explanation', '')
     }
 
-    # 3. Fill LaTeX template
     latex_content = petitionTemplate.format(**form_data)
 
-    # 4. Write .tex file
-    output_dir = os.path.join('output')
+    # unique identifier
+    unique_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+
+    # Set the output directory
+    output_dir = os.path.join(os.getcwd(), "output")
     os.makedirs(output_dir, exist_ok=True)
-    tex_filename = os.path.join(output_dir, 'petition.tex')
+    
+    # Use the unique identifier to create unique filenames for the .tex and .pdf files
+    tex_filename = os.path.join(output_dir, f"petition_{unique_id}.tex")
+    pdf_filename = os.path.join(output_dir, f"petition_{unique_id}.pdf")
 
     with open(tex_filename, 'w') as f:
         f.write(latex_content)
@@ -479,12 +483,10 @@ def submit():
     except subprocess.CalledProcessError as e:
         return f"An error occurred during PDF generation: {e}"
 
-    pdf_filename = os.path.join(output_dir, 'petition.pdf')
-
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    # find user id by email
+    # Find user_id by email
     cursor.execute("SELECT user_id FROM users WHERE email=%s", (user_info["email"],))
     user_row = cursor.fetchone()
     if not user_row:
@@ -494,14 +496,13 @@ def submit():
 
     user_id = user_row["user_id"]
 
-    # Insert the request
     cursor.execute("""
         INSERT INTO requests (user_id, form_type, status)
         VALUES (%s, %s, %s)
     """, (user_id, 'petition', 'submitted'))
     request_id = cursor.lastrowid
 
-    # Insert the PDF path in documents
+    # Insert the PDF path in the documents table
     cursor.execute("""
         INSERT INTO documents (request_id, document_path)
         VALUES (%s, %s)
@@ -511,7 +512,7 @@ def submit():
     cursor.close()
     conn.close()
 
-    # return pdf
+    # Return the PDF file to the user
     return send_file(pdf_filename, as_attachment=True)
 
 @app.route("/download_pdf/<int:request_id>")
