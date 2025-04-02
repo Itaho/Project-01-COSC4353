@@ -467,7 +467,7 @@ def submit():
     unique_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
 
     # Use a persistent folder in /home (which Azure preserves)
-    output_dir = os.path.join(os.environ.get("HOME", "/home"), "output")
+    output_dir = os.path.join(os.getcwd(), "SavedPdf")
     os.makedirs(output_dir, exist_ok=True)
     
     tex_filename = os.path.join(output_dir, f"petition_{unique_id}.tex")
@@ -531,11 +531,13 @@ def download_pdf(request_id):
         if not row:
             return f"No PDF found for request_id={request_id}", 404
 
-        pdf_path = row["document_path"]
+        filename = os.path.basename(row["document_path"])  # Ensure it's just a filename
+        pdf_path = os.path.join(os.getcwd(), "SavedPdf", filename)
+
         if not os.path.exists(pdf_path):
             return f"PDF file not found on disk: {pdf_path}", 404
 
-        return send_file(pdf_path, as_attachment=False)
+        return send_file(pdf_path, as_attachment=True)
 
     except Exception as e:
         return f"Error retrieving PDF: {str(e)}", 500
