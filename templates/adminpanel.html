@@ -109,40 +109,41 @@
     </form>
 
 
-    <h2>Petitions</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Request ID</th>
-          <th>User Email</th>
-          <th>Submitted At</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-      {% for p in petitions %}
-        <tr>
-          <td>{{ p.request_id }}</td>
-          <td>{{ p.email }}</td>
-          <td>{{ p.submitted_at }}</td>
-          <td>{{ p.req_status }}</td>
-          <td>
-            <!-- A link to the PDF -->
-            {% if p.document_path %}
-              <a href="/download_pdf/{{ p.request_id }}">View PDF</a>
-            {% endif %}
-            
-            <!-- Approve/Return -->
-            <form action="{{ url_for('approve_request') }}" method="POST" style="display:inline;">
-              <input type="hidden" name="request_id" value="{{ p.request_id }}">
-              <button type="submit">Approve</button>
-            </form>
-          </td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
+    <div class="petitions">
+        <h2>Petitions</h2>
+        
+        <table>
+          <thead>
+            <tr>
+              <th>Request ID</th>
+              <th>User Email</th>
+              <th>Submitted At</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in petitions %}
+            <tr>
+              <td>{{ p.request_id }}</td>
+              <td>{{ p.email }}</td>
+              <td>{{ p.submitted_at }}</td>
+              <td>{{ p.req_status }}</td>
+              <td>
+                {% if p.document_path %}
+                  <a href="{{ url_for('download_pdf', request_id=p.request_id) }}">View PDF</a>
+                {% endif %}
+                
+                <form action="{{ url_for('approve_request') }}" method="POST">
+                  <input type="hidden" name="request_id" value="{{ p.request_id }}">
+                  <button type="submit">Approve</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+    </div>
     
   </div>
 </body>
