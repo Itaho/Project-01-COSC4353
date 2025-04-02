@@ -2,12 +2,13 @@ name: Build and Push Docker Image to Docker Hub
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -15,12 +16,13 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          username: "pnchau"
+          password: "dckr_pat_RAqQfXkvD7ISGPyEC3iOLpOpCFI"
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v2
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/userm:latest
+          tags: "pnchau/userm:latest"
+
