@@ -87,22 +87,27 @@
         <button type="submit">Update Access Level</button>
     </form>
 
-     <!-- enable and disable user -->
-    <h2>Enable or Disable Users</h2>
-    {% for user in users %}
-      <div style="margin-bottom: 10px;">
-        <strong>{{ user.username }}</strong>
-        (Status: {{ user.status }}) 
-        <form action="{{ url_for('toggle_status') }}" method="POST" style="display: inline;">
-          <input type="hidden" name="email" value="{{ user.username }}">
-          {% if user.status == 'active' %}
-            <button type="submit">Disable</button>
-          {% else %}
-            <button type="submit">Enable</button>
-          {% endif %}
-        </form>
-      </div>
-    {% endfor %}
+    <!-- enable and disable user -->
+    <h2>Enable or Disable a User</h2>
+    <form action="{{ url_for('toggle_status') }}" method="POST">
+      <label for="toggleUserSelect">Select User:</label>
+      <select id="toggleUserSelect" name="email">
+        {% for user in users %}
+          <option value="{{ user.username }}">
+            {{ user.username }} (Status: {{ user.status }})
+          </option>
+        {% endfor %}
+      </select>
+    
+      <label for="enableDisableSelect">Action:</label>
+      <select id="enableDisableSelect" name="action">
+        <option value="enable">Enable</option>
+        <option value="disable">Disable</option>
+      </select>
+    
+      <button type="submit">Update Status</button>
+    </form>
+
 
     <h2>Petitions</h2>
     <table>
