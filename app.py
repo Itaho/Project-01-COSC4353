@@ -458,6 +458,43 @@ def submit():
     except subprocess.CalledProcessError as e:
         return f"An error occurred during PDF generation: {e}"
 
+    user_info = session.get("user")
+    if not user_info:
+        return "You must be logged in", 403
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # find user id by email
+    cursor.execute("SELECT user_id FROM users WHERE email=%s", (user_info["email"],))
+    user_row = cursor.fetchone()
+    if not user_row:
+        cursor.close()
+        conn.close()
+        return "User not found in DB", 404
+
+    user_id = user_row["user_id"]
+
+    # insert into requests
+    cursor.execute("""
+        INSERT INTO requests (user_id, form_type, status)
+        VALUES (%s, %s, %s)
+    """, (user_id, 'petition', 'submitted'))
+    request_id = cursor.lastrowid
+
+    # insert the PDF in documents in db
+    cursor.execute("""
+        INSERT INTO documents (request_id, document_path)
+        VALUES (%s, %s)
+    """, (request_id, pdf_filename))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    # return PDF back
+    return send_file(pdf_filename, as_attachment=True)
+
 if __name__ == "__main__":
     app.run()
 
