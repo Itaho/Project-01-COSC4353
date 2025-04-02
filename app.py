@@ -146,8 +146,27 @@ def admin_panel():
             JOIN roles r ON u.role_id = r.role_id
         """)
         users = cursor.fetchall()
+        # loads petitions
+        cursor.execute("""
+            SELECT
+                req.request_id,
+                req.status AS req_status,
+                req.form_type,
+                req.submitted_at,
+                u.email,
+                u.user_id,
+                d.document_path
+            FROM requests req
+            JOIN users u ON req.user_id = u.user_id
+            LEFT JOIN documents d ON req.request_id = d.request_id
+            WHERE req.form_type = 'petition'
+            ORDER BY req.submitted_at DESC
+        """)
+        petitions = cursor.fetchall()
+        
         cursor.close()
         conn.close()
+        return render_template("adminpanel.html", users=users, petitions=petitions)
     except Exception as e:
         # This will display the error message to help you debug
         return f"Error fetching users: {str(e)}", 500
