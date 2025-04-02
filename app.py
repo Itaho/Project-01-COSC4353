@@ -174,7 +174,7 @@ def admin_panel():
 
 @app.route("/toggle-status", methods=["POST"])
 def toggle_status():
-    # Check if user is logged in
+    # Checks if user is logged in
     if "user" not in session:
         return "You must be logged in to toggle status.", 403
 
@@ -183,17 +183,20 @@ def toggle_status():
     if not current_user_email:
         return "No valid email in session.", 403
 
-    # Checks email needed to be toggled to see if its in database
+    # Get target user email & the action ("enable" or "disable")
     user_email_to_toggle = request.form.get("email")
+    action = request.form.get("action")  # <-- new
+
     if not user_email_to_toggle:
         return "User email missing.", 400
-        
-    # Checks user's role to see if they are admin
+    if not action:
+        return "Action (enable/disable) missing.", 400
+
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        
-        # Query the current user's role
+
+        # Checks if current user is admin
         cursor.execute("""
             SELECT r.role_name
             FROM users u
@@ -201,43 +204,39 @@ def toggle_status():
             WHERE u.email = %s
         """, (current_user_email,))
         current_user = cursor.fetchone()
-        
-        # Deny the user request to enable or disable if they are not admin
+
         if not current_user or current_user["role_name"] != "admin":
             cursor.close()
             conn.close()
             return "You do not have permission to toggle user status.", 403
 
-        # Retrieves the current status of user
-        cursor.execute("""
-            SELECT status 
-            FROM users 
-            WHERE email = %s
-        """, (user_email_to_toggle,))
+        cursor.execute("SELECT status FROM users WHERE email = %s", (user_email_to_toggle,))
         row = cursor.fetchone()
-        
         if not row:
             cursor.close()
             conn.close()
             return f"User with email {user_email_to_toggle} does not exist.", 404
-        
-        current_status = row["status"]
-        new_status = "inactive" if current_status == "active" else "active"
 
-        # 4. Update it
+        # Decide new status
+        if action == "enable":
+            new_status = "active"
+        else:
+            new_status = "inactive"
+
+        # Update in DB
         cursor.execute("""
-            UPDATE users 
+            UPDATE users
             SET status = %s
             WHERE email = %s
         """, (new_status, user_email_to_toggle))
         conn.commit()
-        
+
         cursor.close()
         conn.close()
 
     except Exception as e:
         return f"Error toggling status: {str(e)}", 500
-        
+
     return redirect(url_for("admin_panel"))
 
 @app.before_request
