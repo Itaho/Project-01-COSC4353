@@ -514,6 +514,44 @@ def submit():
     # return PDF back
     return send_file(pdf_filename, as_attachment=True)
 
+@app.route("/approve_request", methods=["POST"])
+def approve_request():
+    if "user" not in session:
+        return "Not logged in", 403
+
+    admin_email = session["user"].get("email")
+
+    # checks for admin
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT r.role_name
+        FROM users u
+        JOIN roles r ON u.role_id = r.role_id
+        WHERE u.email = %s
+    """, (admin_email,))
+    role_check = cursor.fetchone()
+
+    if not role_check or role_check["role_name"] != "admin":
+        cursor.close()
+        conn.close()
+        return "You must be admin to approve requests.", 403
+
+    request_id = request.form.get("request_id")
+    if not request_id:
+        cursor.close()
+        conn.close()
+        return "No request ID provided", 400
+
+    # approves request
+    cursor.execute("UPDATE requests SET status='approved' WHERE request_id=%s", (request_id,))
+    
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return redirect(url_for("admin_panel"))
+
 if __name__ == "__main__":
     app.run()
 
