@@ -9,12 +9,15 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
+RUN mkdir -p static/signatures static/pdfs
+RUN chmod 777 static/signatures static/pdfs
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . /app
 
+ENV PORT=8000
 EXPOSE 8000
-CMD ["/bin/bash", "startup.sh"]
 
-
+CMD gunicorn --bind 0.0.0.0:$PORT app:app
