@@ -516,30 +516,23 @@ def submit():
 
 @app.route("/download_pdf/<int:request_id>")
 def download_pdf(request_id):
-    """
-    Fetches the PDF path from the 'documents' table for the given request_id
-    and sends the file back to the user.
-    """
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        
-        # Query the documents table for the file path
         cursor.execute("""
             SELECT document_path
             FROM documents
             WHERE request_id = %s
         """, (request_id,))
-        doc_row = cursor.fetchone()
-        
+        row = cursor.fetchone()
         cursor.close()
         conn.close()
 
-        if not doc_row:
+        if not row:
             return f"No PDF found for request_id={request_id}", 404
 
-        pdf_path = doc_row["document_path"]
-        
+        pdf_path = row["document_path"]
+
         return send_file(pdf_path, as_attachment=False)
 
     except Exception as e:
