@@ -2,3 +2,5 @@ Flask
 gunicorn
 mysql-connector-python
 Werkzeug
+jinja2
+python-dotenv
