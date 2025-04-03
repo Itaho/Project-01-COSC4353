@@ -580,6 +580,68 @@ def approve_request():
 
     return redirect(url_for("admin_panel"))
 
+@app.route("/withdraw", methods=["GET"])
+def withdraw():
+    return render_template("withdrawForm.html")
+
+# 3. Route to process withdrawal form submission and generate LaTeX PDF
+@app.route("/WithdrawSubmit", methods=["POST"])
+def submit_withdraw():
+    user_info = session.get("user")
+    if not user_info:
+        return "You must be logged in", 403
+
+    # Form data
+    data = {
+        'student_name': request.form.get('student_name', ''),
+        'myuh_id': request.form.get('myuh_id', ''),
+        'phone': request.form.get('phone', ''),
+        'email': request.form.get('email', ''),
+        'program': request.form.get('program', ''),
+        'career': request.form.get('career', ''),
+        'term': request.form.get('term', ''),
+        'year': request.form.get('year', ''),
+        'aid': 'Yes' if request.form.get('aid') else 'No',
+        'intl': 'Yes' if request.form.get('intl') else 'No',
+        'athlete': 'Yes' if request.form.get('athlete') else 'No',
+        'veteran': 'Yes' if request.form.get('veteran') else 'No',
+        'grad': 'Yes' if request.form.get('grad') else 'No',
+        'doctoral': 'Yes' if request.form.get('doctoral') else 'No',
+        'housing': 'Yes' if request.form.get('housing') else 'No',
+        'dining': 'Yes' if request.form.get('dining') else 'No',
+        'parking': 'Yes' if request.form.get('parking') else 'No',
+        'agree': 'Yes' if request.form.get('agree') else 'No',
+        'date': request.form.get('date', '')
+    }
+
+    # Load LaTeX template
+    with open("templates/withdraw_template.tex", "r") as f:
+        template = Template(f.read())
+
+    rendered_tex = template.render(**data)
+
+    # Generate filenames
+    unique_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    output_dir = os.path.join(os.getcwd(), "SavedPdf")
+    os.makedirs(output_dir, exist_ok=True)
+
+    tex_filename = os.path.join(output_dir, f"withdraw_{unique_id}.tex")
+    pdf_output = os.path.join(output_dir, f"withdraw_{unique_id}.pdf")
+
+    with open(tex_filename, 'w') as f:
+        f.write(rendered_tex)
+
+    try:
+        subprocess.run(['pdflatex', '-output-directory', output_dir, tex_filename], check=True)
+    except subprocess.CalledProcessError as e:
+        return f"LaTeX generation failed: {e}"
+
+    if not os.path.exists(pdf_output):
+        return "PDF generation failed.", 500
+
+    return send_file(pdf_output, as_attachment=True)
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     app.run(host="0.0.0.0", port=port)
