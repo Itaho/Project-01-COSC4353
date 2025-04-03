@@ -3,6 +3,7 @@ import mysql.connector
 import json
 import base64
 import subprocess
+from jinja2 import Template
 from flask import Flask, request, render_template, redirect, url_for, session, send_file
 from werkzeug.utils import secure_filename
 from datetime import datetime
