@@ -423,26 +423,53 @@ def profile():
         return f"Error fetching profile: {str(e)}", 500
     
 petitionTemplate = r"""
-\documentclass{{article}}
-\begin{{document}}
-\section*{{Petition Form}}
+\documentclass[12pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{titlesec}
+\usepackage{parskip}
+\usepackage{enumitem}
+\setlength{\parindent}{0pt}
 
-\textbf{{Name:}} {lname}, {fname} {mname} \\
-\textbf{{Contact Phone Number:}} {phone} \\
-\textbf{{myUH ID:}} {myUH} \\
-\textbf{{UH Email:}} {uhEmail} \\
-\textbf{{Program:}} {program} \\
-\textbf{{Alias:}} {alias} \\
-\textbf{{Purpose of Petition:}} {purpose_of_petition} \\
-\textbf{{Institution Name:}} {institution_name} \\
-\textbf{{City/State/Zip:}} {city_state_zip} \\
-\textbf{{Courses Approved for Transfer:}} {courses_transfer} \\
-\textbf{{Hours Previously Transferred:}} {hours_transferred} \\
-\textbf{{Transfer Credits on this Request:}} {transfer_credits} \\
-\textbf{{Explanation of Request:}} \\
+\titleformat{\section}{\normalfont\Large\bfseries}{}{0em}{}
+\titleformat{\subsection}{\normalfont\bfseries}{}{0em}{}
+
+\begin{document}
+
+\section*{Graduate Petition Information}
+
+\subsection*{Student Information}
+\begin{tabular}{ll}
+\textbf{Last Name:}  {lname} \\
+\textbf{First Name:}  {fname} \\
+\textbf{Middle Name:}  {mname} \\
+\textbf{Phone Number:}  {phone} \\
+\textbf{myUH ID:}  {myUH} \\
+\textbf{University Email:}  {uhEmail} \\
+\end{tabular}
+
+\vspace{1em}
+\subsection*{Academic Information}
+\begin{tabular}{ll}
+\textbf{Program:}  {program} \\
+\textbf{Alias:}  {alias} \\
+\textbf{Purpose of Petition:}  {purpose_of_petition} \\
+\textbf{Institution Name:}  {institution_name} \\
+\textbf{City/State/Zip:}  {city_state_zip} \\
+\end{tabular}
+
+\vspace{1em}
+\subsection*{Transfer Credit Information}
+\begin{tabular}{ll}
+\textbf{Courses Approved for Transfer:}  {courses_transfer} \\
+\textbf{Hours Previously Transferred:}  {hours_transferred} \\
+\textbf{Transfer Credits on this Request:}  {transfer_credits} \\
+\end{tabular}
+
+\vspace{1em}
+\subsection*{Explanation of Request}
 {explanation}
 
-\end{{document}}
+\end{document}
 """
 @app.route('/petition')
 def petition():
