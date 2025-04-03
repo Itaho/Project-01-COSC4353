@@ -467,20 +467,22 @@ def submit():
         
         unique_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
 
-        output_dir = os.path.join(os.getcwd(), "SavedPdf")
-        os.makedirs(output_dir, exist_ok=True)
+        # Create static/pdfs directory 
+        pdf_dir = os.path.join(app.root_path, "static", "pdfs")
+        os.makedirs(pdf_dir, exist_ok=True)
         
+        # Define paths
         relative_path = os.path.join("static", "pdfs", f"petition_{unique_id}.pdf")
         full_path = os.path.join(app.root_path, relative_path)
+        tex_filename = os.path.join(pdf_dir, f"petition_{unique_id}.tex")
         
-        tex_filename = os.path.join(output_dir, f"petition_{unique_id}.tex")
-        pdf_output_name = os.path.join(output_dir, f"petition_{unique_id}.pdf")
-        
+        # Write LaTeX file
         with open(tex_filename, 'w') as f:
             f.write(latex_content)
             
+        # Run pdflatex in the same directory as the tex file
         result = subprocess.run(
-            ['pdflatex', '-output-directory', output_dir, tex_filename], 
+            ['pdflatex', '-output-directory', pdf_dir, tex_filename], 
             check=False,
             capture_output=True,
             text=True
@@ -492,8 +494,8 @@ def submit():
             return error_msg, 200, {'Content-Type': 'text/html'}
         
         # Verify PDF was created
-        if not os.path.exists(pdf_output_name):
-            error_msg = f"PDF generation failed: {pdf_output_name} not found"
+        if not os.path.exists(full_path):
+            error_msg = f"PDF generation failed: {full_path} not found"
             return error_msg, 200, {'Content-Type': 'text/html'}
         
         conn = get_db_connection()
@@ -521,7 +523,7 @@ def submit():
         cursor.close()
         conn.close()
         
-        return send_file(pdf_output_name, as_attachment=True)
+        return send_file(full_path, as_attachment=True)
         
     except Exception as e:
         import traceback
@@ -546,9 +548,17 @@ def download_pdf(request_id):
         if not row:
             return f"No PDF found for request_id={request_id}", 404
 
-        filename = os.path.basename(row["document_path"])  # Ensure it's just a filename
+        # Get the document path from database
+        document_path = row["document_path"]
+        
+        # First try the SavedPdf directory
+        filename = os.path.basename(document_path)
         pdf_path = os.path.join(os.getcwd(), "SavedPdf", filename)
-
+        
+        # If not in SavedPdf, try the static/pdfs directory
+        if not os.path.exists(pdf_path):
+            pdf_path = os.path.join(app.root_path, document_path)
+            
         if not os.path.exists(pdf_path):
             return f"PDF file not found on disk: {pdf_path}", 404
 
@@ -637,59 +647,66 @@ def submit_withdraw():
 
     # Generate filenames
     unique_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-    output_dir = os.path.join(os.getcwd(), "SavedPdf")
-    os.makedirs(output_dir, exist_ok=True)
+    
+    # Create static/pdfs directory if it doesn't exist
+    pdf_dir = os.path.join(app.root_path, "static", "pdfs")
+    os.makedirs(pdf_dir, exist_ok=True)
+    
+    # Define paths
+    relative_path = os.path.join("static", "pdfs", f"withdraw_{unique_id}.pdf")
+    full_path = os.path.join(app.root_path, relative_path)
+    tex_filename = os.path.join(pdf_dir, f"withdraw_{unique_id}.tex")
 
-    tex_filename = os.path.join(output_dir, f"withdraw_{unique_id}.tex")
-    pdf_output = os.path.join(output_dir, f"withdraw_{unique_id}.pdf")
-
+    # Write LaTeX file
     with open(tex_filename, 'w') as f:
         f.write(rendered_tex)
 
     try:
-        subprocess.run(['pdflatex', '-output-directory', output_dir, tex_filename], check=True)
+        # Run pdflatex in the same directory as the tex file
+        subprocess.run(['pdflatex', '-output-directory', pdf_dir, tex_filename], check=True)
     except subprocess.CalledProcessError as e:
         return f"LaTeX generation failed: {e}"
 
-    if not os.path.exists(pdf_output):
+    if not os.path.exists(full_path):
         return "PDF generation failed.", 500
 
-    return send_file(pdf_output, as_attachment=True)
-
-
-@app.route('/test-env')
-def test_env():
-    result = {}
+    # Store in database
     try:
-        # Test pdflatex installation
-        pdflatex_test = subprocess.run(['which', 'pdflatex'], capture_output=True, text=True)
-        result['pdflatex_path'] = pdflatex_test.stdout if pdflatex_test.returncode == 0 else 'Not found'
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
         
-        # Check directory permissions
-        dirs = [
-            os.path.join(os.getcwd(), "SavedPdf"),
-            os.path.join(app.root_path, "static", "pdfs")
-        ]
-        result['directories'] = {}
-        for d in dirs:
-            os.makedirs(d, exist_ok=True)
-            result['directories'][d] = {
-                'exists': os.path.exists(d),
-                'is_dir': os.path.isdir(d),
-                'permissions': oct(os.stat(d).st_mode)[-3:]
-            }
+        # Get user_id
+        cursor.execute("SELECT user_id FROM users WHERE email=%s", (user_info["email"],))
+        user_row = cursor.fetchone()
+        if not user_row:
+            cursor.close()
+            conn.close()
+            return "User not found in DB", 404
+            
+        user_id = user_row["user_id"]
         
-        # Current working directory
-        result['cwd'] = os.getcwd()
-        result['app_root'] = app.root_path
+        # Create request
+        cursor.execute("""
+            INSERT INTO requests (user_id, form_type, status)
+            VALUES (%s, %s, %s)
+        """, (user_id, 'withdrawal', 'submitted'))
         
-        # Environment variables
-        result['env'] = dict(os.environ)
+        request_id = cursor.lastrowid
         
-        return result
+        # Store document path
+        cursor.execute("""
+            INSERT INTO documents (request_id, document_path)
+            VALUES (%s, %s)
+        """, (request_id, relative_path))
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
     except Exception as e:
-        import traceback
-        return {'error': str(e), 'traceback': traceback.format_exc()}
+        return f"Database error: {str(e)}", 500
+
+    return send_file(full_path, as_attachment=True)
 
 
 if __name__ == "__main__":
