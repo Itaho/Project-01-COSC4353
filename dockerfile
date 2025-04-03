@@ -12,4 +12,4 @@ COPY . /app
 ENV PORT=8080
 EXPOSE 8080
 # Use exec form for CMD
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "app:app"]
