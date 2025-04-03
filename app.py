@@ -441,11 +441,17 @@ def petition():
 def submit():
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
     user_info = session.get("user")
     if not user_info:
         return "You must be logged in", 403
 
+=======
+    user_info = session.get("user")
+    if not user_info:
+        return "You must be logged in", 403
+>>>>>>> parent of 0c9ed9c (Update app.py)
 =======
     user_info = session.get("user")
     if not user_info:
@@ -469,6 +475,7 @@ def submit():
         'transfer_credits': request.form.get('transfer_credits', ''),
         'explanation': request.form.get('explanation', '')
     }
+<<<<<<< HEAD
 <<<<<<< HEAD
 
     latex_content = petitionTemplate.format(**form_data)
@@ -514,6 +521,11 @@ def submit():
         latex_content = petitionTemplate.format(**form_data)
         
         unique_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+=======
+    latex_content = petitionTemplate.format(**form_data)
+    # Generate a unique ID for the file
+    unique_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+>>>>>>> parent of 0c9ed9c (Update app.py)
 =======
     latex_content = petitionTemplate.format(**form_data)
     # Generate a unique ID for the file
