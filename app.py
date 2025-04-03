@@ -439,81 +439,95 @@ def petition():
 
 @app.route('/PetitionSubmit', methods=['POST'])
 def submit():
-    user_info = session.get("user")
-    if not user_info:
-        return "You must be logged in", 403
-    # Gather form data
-    form_data = {
-        'fname': request.form.get('fname', ''),
-        'mname': request.form.get('mname', ''),
-        'lname': request.form.get('lname', ''),
-        'phone': request.form.get('phone', ''),
-        'myUH': request.form.get('myUH', ''),
-        'uhEmail': request.form.get('uhEmail', ''),
-        'program': request.form.get('program', ''),
-        'alias': request.form.get('alias', ''),
-        'purpose_of_petition': request.form.get('purpose_of_petition', ''),
-        'institution_name': request.form.get('institution_name', ''),
-        'city_state_zip': request.form.get('city_state_zip', ''),
-        'courses_transfer': request.form.get('courses_transfer', ''),
-        'hours_transferred': request.form.get('hours_transferred', ''),
-        'transfer_credits': request.form.get('transfer_credits', ''),
-        'explanation': request.form.get('explanation', '')
-    }
-    latex_content = petitionTemplate.format(**form_data)
-    # Generate a unique ID for the file
-    unique_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-
-
-    # Use a persistent folder in /home (which Azure preserves)
-    output_dir = os.path.join(os.getcwd(), "SavedPdf")
-    os.makedirs(output_dir, exist_ok=True)
-    
-    # Store relative path to database, but full path for file operations
-    relative_path = os.path.join("static", "pdfs", f"petition_{unique_id}.pdf")
-    full_path = os.path.join(app.root_path, relative_path)
-    
-    # For LaTeX processing, we need the file names without app.root_path
-    tex_filename = os.path.join(output_dir, f"petition_{unique_id}.tex")
-    pdf_output_name = os.path.join(output_dir, f"petition_{unique_id}.pdf")
-    
-    with open(tex_filename, 'w') as f:
-        f.write(latex_content)
     try:
-        subprocess.run(['pdflatex', '-output-directory', output_dir, tex_filename], check=True)
-    except subprocess.CalledProcessError as e:
-        return f"An error occurred during PDF generation: {e}"
-    
-    # Verify PDF was created
-    if not os.path.exists(pdf_output_name):
-        return f"PDF generation failed: {pdf_output_name} not found", 500
-    
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT user_id FROM users WHERE email=%s", (user_info["email"],))
-    user_row = cursor.fetchone()
-    if not user_row:
+        user_info = session.get("user")
+        if not user_info:
+            return "You must be logged in", 403
+            
+        # Gather form data
+        form_data = {
+            'fname': request.form.get('fname', ''),
+            'mname': request.form.get('mname', ''),
+            'lname': request.form.get('lname', ''),
+            'phone': request.form.get('phone', ''),
+            'myUH': request.form.get('myUH', ''),
+            'uhEmail': request.form.get('uhEmail', ''),
+            'program': request.form.get('program', ''),
+            'alias': request.form.get('alias', ''),
+            'purpose_of_petition': request.form.get('purpose_of_petition', ''),
+            'institution_name': request.form.get('institution_name', ''),
+            'city_state_zip': request.form.get('city_state_zip', ''),
+            'courses_transfer': request.form.get('courses_transfer', ''),
+            'hours_transferred': request.form.get('hours_transferred', ''),
+            'transfer_credits': request.form.get('transfer_credits', ''),
+            'explanation': request.form.get('explanation', '')
+        }
+        
+        latex_content = petitionTemplate.format(**form_data)
+        
+        unique_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+
+        output_dir = os.path.join(os.getcwd(), "SavedPdf")
+        os.makedirs(output_dir, exist_ok=True)
+        
+        relative_path = os.path.join("static", "pdfs", f"petition_{unique_id}.pdf")
+        full_path = os.path.join(app.root_path, relative_path)
+        
+        tex_filename = os.path.join(output_dir, f"petition_{unique_id}.tex")
+        pdf_output_name = os.path.join(output_dir, f"petition_{unique_id}.pdf")
+        
+        with open(tex_filename, 'w') as f:
+            f.write(latex_content)
+            
+        result = subprocess.run(
+            ['pdflatex', '-output-directory', output_dir, tex_filename], 
+            check=False,
+            capture_output=True,
+            text=True
+        )
+        
+        # Check pdflatex result
+        if result.returncode != 0:
+            error_msg = f"pdflatex error (code {result.returncode}):<br><pre>{result.stderr}</pre>"
+            return error_msg, 200, {'Content-Type': 'text/html'}
+        
+        # Verify PDF was created
+        if not os.path.exists(pdf_output_name):
+            error_msg = f"PDF generation failed: {pdf_output_name} not found"
+            return error_msg, 200, {'Content-Type': 'text/html'}
+        
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT user_id FROM users WHERE email=%s", (user_info["email"],))
+        user_row = cursor.fetchone()
+        if not user_row:
+            cursor.close()
+            conn.close()
+            return "User not found in DB", 404
+        
+        user_id = user_row["user_id"]
+        cursor.execute("""
+            INSERT INTO requests (user_id, form_type, status)
+            VALUES (%s, %s, %s)
+        """, (user_id, 'petition', 'submitted'))
+        
+        request_id = cursor.lastrowid
+        cursor.execute("""
+            INSERT INTO documents (request_id, document_path)
+            VALUES (%s, %s)
+        """, (request_id, relative_path))
+        
+        conn.commit()
         cursor.close()
         conn.close()
-        return "User not found in DB", 404
-    
-    user_id = user_row["user_id"]
-    cursor.execute("""
-        INSERT INTO requests (user_id, form_type, status)
-        VALUES (%s, %s, %s)
-    """, (user_id, 'petition', 'submitted'))
-    
-    request_id = cursor.lastrowid
-    cursor.execute("""
-        INSERT INTO documents (request_id, document_path)
-        VALUES (%s, %s)
-    """, (request_id, relative_path))
-    
-    conn.commit()
-    cursor.close()
-    conn.close()
-    
-    return send_file(pdf_output_name, as_attachment=True)
+        
+        return send_file(pdf_output_name, as_attachment=True)
+        
+    except Exception as e:
+        import traceback
+        error_msg = f"Error: {str(e)}<br><pre>{traceback.format_exc()}</pre>"
+        
+        return error_msg, 200, {'Content-Type': 'text/html'}
 
 @app.route("/download_pdf/<int:request_id>")
 def download_pdf(request_id):
