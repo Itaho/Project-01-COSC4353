@@ -350,19 +350,21 @@ def upload_signature():
         return redirect(url_for('profile', error='No selected file'))
 
     if file and allowed_file(file.filename):
-        # Create unique filename using timestamp
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        filename = secure_filename(f"{timestamp}_{file.filename}")
-        
-        # Ensure the signatures directory exists
-        os.makedirs(os.path.join(app.root_path, 'static', 'signatures'), exist_ok=True)
-        
-        # Save file in static/signatures
-        filepath = os.path.join(app.root_path, 'static', 'signatures', filename)
-        
         try:
-            # Save the file
+            # Create unique filename using timestamp
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            filename = secure_filename(f"{timestamp}_{file.filename}")
+            
+            # Ensure the signatures directory exists in static folder
+            signatures_dir = os.path.join('static', 'signatures')
+            os.makedirs(signatures_dir, exist_ok=True)
+            
+            # Save file in static/signatures
+            filepath = os.path.join(signatures_dir, filename)
             file.save(filepath)
+            
+            # Log the file save
+            app.logger.info(f"Saved signature file to: {filepath}")
             
             # Update database with signature path
             user_info = session.get("user")
@@ -371,7 +373,7 @@ def upload_signature():
                 cursor = conn.cursor()
                 
                 # Store path relative to static directory
-                relative_path = os.path.join('signatures', filename)
+                relative_path = f"signatures/{filename}"  # Use forward slash for web paths
                 cursor.execute(
                     "UPDATE users SET signature_path = %s WHERE email = %s",
                     (relative_path, user_info["email"])
@@ -381,14 +383,14 @@ def upload_signature():
                 cursor.close()
                 conn.close()
                 
-                # Return the success template
+                app.logger.info(f"Updated database with signature path: {relative_path}")
                 return render_template('upload_success.html')
             else:
                 return redirect(url_for('profile', error='User not authenticated'))
                 
         except Exception as e:
-            app.logger.error(f"Error uploading file: {e}")
-            return redirect(url_for('profile', error='Error uploading file'))
+            app.logger.error(f"Error uploading file: {str(e)}")
+            return redirect(url_for('profile', error=f'Error uploading file: {str(e)}'))
             
     return redirect(url_for('profile', error='Invalid file type'))
 
