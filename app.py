@@ -696,41 +696,6 @@ def submit_withdraw():
     return send_file(pdf_output, as_attachment=True)
 
 
-@app.route('/test-env')
-def test_env():
-    result = {}
-    try:
-        # Test pdflatex installation
-        pdflatex_test = subprocess.run(['which', 'pdflatex'], capture_output=True, text=True)
-        result['pdflatex_path'] = pdflatex_test.stdout if pdflatex_test.returncode == 0 else 'Not found'
-        
-        # Check directory permissions
-        dirs = [
-            os.path.join(os.getcwd(), "SavedPdf"),
-            os.path.join(app.root_path, "static", "pdfs")
-        ]
-        result['directories'] = {}
-        for d in dirs:
-            os.makedirs(d, exist_ok=True)
-            result['directories'][d] = {
-                'exists': os.path.exists(d),
-                'is_dir': os.path.isdir(d),
-                'permissions': oct(os.stat(d).st_mode)[-3:]
-            }
-        
-        # Current working directory
-        result['cwd'] = os.getcwd()
-        result['app_root'] = app.root_path
-        
-        # Environment variables
-        result['env'] = dict(os.environ)
-        
-        return result
-    except Exception as e:
-        import traceback
-        return {'error': str(e), 'traceback': traceback.format_exc()}
-
-
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
