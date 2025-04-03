@@ -135,18 +135,22 @@ def admin_panel():
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        # Query joins users and roles tables to get current access levels
+        # Query joins users and roles tables to get current access levels and signature paths
         cursor.execute("""
-            SELECT u.email AS username, 
-                   CASE 
-                       WHEN r.role_name = 'admin' THEN 'administrator'
-                       ELSE 'basic'
-                   END AS access_level,
-                   u.status
+            SELECT 
+                u.email AS username, 
+                CASE 
+                    WHEN r.role_name = 'admin' THEN 'administrator'
+                    ELSE 'basic'
+                END AS access_level,
+                u.status,
+                u.signature_path
             FROM users u
             JOIN roles r ON u.role_id = r.role_id
+            ORDER BY u.email
         """)
         users = cursor.fetchall()
+        
         # loads petitions
         cursor.execute("""
             SELECT
