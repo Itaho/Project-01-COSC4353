@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Project MooseFactory</title>
   <style>
+    /* Reset some default browser margins/padding */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -13,7 +14,7 @@
 
     body {
       background-color: #fff;
-      color: #c00;
+      color: #c00; /* Red text color */
       font-family: Arial, sans-serif;
       display: flex;
       justify-content: center;
@@ -23,34 +24,21 @@
       position: relative;
     }
 
+    /* Administrator Panel button styling */
     .admin-button {
+      position: fixed;
+      top: 10px;
+      right: 10px;
       background-color: #c00;
       color: #fff;
       padding: 10px 20px;
       text-decoration: none;
       border-radius: 5px;
       font-family: Arial, sans-serif;
-      margin: 5px;
-      display: inline-block;
     }
 
     .admin-button:hover {
       opacity: 0.9;
-    }
-
-    .nav-buttons {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-    }
-
-    .nav-left {
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      display: flex;
-      flex-direction: row;
-      gap: 10px;
     }
 
     .container {
@@ -63,11 +51,11 @@
     }
 
     h1 {
-      margin-bottom: 0.5em;
+      margin-bottom: 0.5em; /* Space below the heading */
     }
 
     p {
-      margin-bottom: 1em;
+      margin-bottom: 1em; /* Space below the paragraph */
       line-height: 1.4;
     }
 
@@ -99,19 +87,20 @@
     button:hover {
       opacity: 0.9;
     }
+
+    .bottom-button {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
   </style>
 </head>
 <body>
-  <!-- Top-right buttons -->
+  <!-- Administrator Panel buttons -->
   <div class="nav-buttons">
     <a href="adminpanel.html" class="admin-button">Administrator Panel</a>
-    <a href="{{ url_for('profile') }}" class="admin-button">My Profile</a>
-  </div>
-
-  <!-- Top-left buttons -->
-  <div class="nav-left">
-    <a href="/withdraw" class="admin-button">Term Withdrawal Request</a>
-    <a href="/petition" class="admin-button">Graduate Student Petition Request</a>
+    <a href="{{ url_for('profile') }}" class="admin-button" style="right: 180px;">My Profile</a>
   </div>
 
   <div class="container">
@@ -125,6 +114,13 @@
       <textarea name="message" rows="5" placeholder="Tell us about yourself" required></textarea>
       <button type="submit">Submit</button>
     </form>
+  </div>
+
+  <!-- Bottom button leading to petition.html -->
+  <div class="bottom-button">
+    <button onclick="window.location.href='/petition'">
+      Graduate Student Petition Request
+    </button>
   </div>
 </body>
 </html>
