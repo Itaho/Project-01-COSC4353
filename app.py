@@ -3,7 +3,6 @@ import mysql.connector
 import json
 import base64
 import subprocess
-from jinja2 import Template
 from flask import Flask, request, render_template, redirect, url_for, session, send_file
 from werkzeug.utils import secure_filename
 from datetime import datetime
@@ -439,24 +438,10 @@ def petition():
 
 @app.route('/PetitionSubmit', methods=['POST'])
 def submit():
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
     user_info = session.get("user")
     if not user_info:
         return "You must be logged in", 403
 
-=======
-    user_info = session.get("user")
-    if not user_info:
-        return "You must be logged in", 403
->>>>>>> parent of 0c9ed9c (Update app.py)
-=======
-    user_info = session.get("user")
-    if not user_info:
-        return "You must be logged in", 403
->>>>>>> parent of 0c9ed9c (Update app.py)
     # Gather form data
     form_data = {
         'fname': request.form.get('fname', ''),
@@ -475,8 +460,6 @@ def submit():
         'transfer_credits': request.form.get('transfer_credits', ''),
         'explanation': request.form.get('explanation', '')
     }
-<<<<<<< HEAD
-<<<<<<< HEAD
 
     latex_content = petitionTemplate.format(**form_data)
 
@@ -493,95 +476,43 @@ def submit():
     with open(tex_filename, 'w') as f:
         f.write(latex_content)
 
->>>>>>> parent of 4182273 (Update app.py)
-    try:
-        user_info = session.get("user")
-        if not user_info:
-            return "You must be logged in", 403
-            
-        # Gather form data
-        form_data = {
-            'fname': request.form.get('fname', ''),
-            'mname': request.form.get('mname', ''),
-            'lname': request.form.get('lname', ''),
-            'phone': request.form.get('phone', ''),
-            'myUH': request.form.get('myUH', ''),
-            'uhEmail': request.form.get('uhEmail', ''),
-            'program': request.form.get('program', ''),
-            'alias': request.form.get('alias', ''),
-            'purpose_of_petition': request.form.get('purpose_of_petition', ''),
-            'institution_name': request.form.get('institution_name', ''),
-            'city_state_zip': request.form.get('city_state_zip', ''),
-            'courses_transfer': request.form.get('courses_transfer', ''),
-            'hours_transferred': request.form.get('hours_transferred', ''),
-            'transfer_credits': request.form.get('transfer_credits', ''),
-            'explanation': request.form.get('explanation', '')
-        }
-        
-        latex_content = petitionTemplate.format(**form_data)
-        
-        unique_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-=======
-    latex_content = petitionTemplate.format(**form_data)
-    # Generate a unique ID for the file
-    unique_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
->>>>>>> parent of 0c9ed9c (Update app.py)
-=======
-    latex_content = petitionTemplate.format(**form_data)
-    # Generate a unique ID for the file
-    unique_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
->>>>>>> parent of 0c9ed9c (Update app.py)
-
-
-    # Use a persistent folder in /home (which Azure preserves)
-    output_dir = os.path.join(os.getcwd(), "SavedPdf")
-    os.makedirs(output_dir, exist_ok=True)
-    
-    # Store relative path to database, but full path for file operations
-    relative_path = os.path.join("static", "pdfs", f"petition_{unique_id}.pdf")
-    full_path = os.path.join(app.root_path, relative_path)
-    
-    # For LaTeX processing, we need the file names without app.root_path
-    tex_filename = os.path.join(output_dir, f"petition_{unique_id}.tex")
-    pdf_output_name = os.path.join(output_dir, f"petition_{unique_id}.pdf")
-    
-    with open(tex_filename, 'w') as f:
-        f.write(latex_content)
     try:
         subprocess.run(['pdflatex', '-output-directory', output_dir, tex_filename], check=True)
     except subprocess.CalledProcessError as e:
         return f"An error occurred during PDF generation: {e}"
-    
+
     # Verify PDF was created
-    if not os.path.exists(pdf_output_name):
-        return f"PDF generation failed: {pdf_output_name} not found", 500
-    
+    if not os.path.exists(pdf_filename):
+        return f"PDF generation failed: {pdf_filename} not found", 500
+
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
+
     cursor.execute("SELECT user_id FROM users WHERE email=%s", (user_info["email"],))
     user_row = cursor.fetchone()
     if not user_row:
         cursor.close()
         conn.close()
         return "User not found in DB", 404
-    
+
     user_id = user_row["user_id"]
+
     cursor.execute("""
         INSERT INTO requests (user_id, form_type, status)
         VALUES (%s, %s, %s)
     """, (user_id, 'petition', 'submitted'))
-    
     request_id = cursor.lastrowid
+
     cursor.execute("""
         INSERT INTO documents (request_id, document_path)
         VALUES (%s, %s)
-    """, (request_id, relative_path))
-    
+    """, (request_id, pdf_filename))
+
     conn.commit()
     cursor.close()
     conn.close()
-    
-    return send_file(pdf_output_name, as_attachment=True)
+
+    return send_file(pdf_filename, as_attachment=True)
 
 @app.route("/download_pdf/<int:request_id>")
 def download_pdf(request_id):
@@ -647,69 +578,6 @@ def approve_request():
 
     return redirect(url_for("admin_panel"))
 
-@app.route("/withdraw", methods=["GET"])
-def withdraw():
-    return render_template("withdrawForm.html")
-
-# 3. Route to process withdrawal form submission and generate LaTeX PDF
-@app.route("/WithdrawSubmit", methods=["POST"])
-def submit_withdraw():
-    user_info = session.get("user")
-    if not user_info:
-        return "You must be logged in", 403
-
-    # Form data
-    data = {
-        'student_name': request.form.get('student_name', ''),
-        'myuh_id': request.form.get('myuh_id', ''),
-        'phone': request.form.get('phone', ''),
-        'email': request.form.get('email', ''),
-        'program': request.form.get('program', ''),
-        'career': request.form.get('career', ''),
-        'term': request.form.get('term', ''),
-        'year': request.form.get('year', ''),
-        'aid': 'Yes' if request.form.get('aid') else 'No',
-        'intl': 'Yes' if request.form.get('intl') else 'No',
-        'athlete': 'Yes' if request.form.get('athlete') else 'No',
-        'veteran': 'Yes' if request.form.get('veteran') else 'No',
-        'grad': 'Yes' if request.form.get('grad') else 'No',
-        'doctoral': 'Yes' if request.form.get('doctoral') else 'No',
-        'housing': 'Yes' if request.form.get('housing') else 'No',
-        'dining': 'Yes' if request.form.get('dining') else 'No',
-        'parking': 'Yes' if request.form.get('parking') else 'No',
-        'agree': 'Yes' if request.form.get('agree') else 'No',
-        'date': request.form.get('date', '')
-    }
-
-    # Load LaTeX template
-    with open("templates/withdraw_template.tex", "r") as f:
-        template = Template(f.read())
-
-    rendered_tex = template.render(**data)
-
-    # Generate filenames
-    unique_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-    output_dir = os.path.join(os.getcwd(), "SavedPdf")
-    os.makedirs(output_dir, exist_ok=True)
-
-    tex_filename = os.path.join(output_dir, f"withdraw_{unique_id}.tex")
-    pdf_output = os.path.join(output_dir, f"withdraw_{unique_id}.pdf")
-
-    with open(tex_filename, 'w') as f:
-        f.write(rendered_tex)
-
-    try:
-        subprocess.run(['pdflatex', '-output-directory', output_dir, tex_filename], check=True)
-    except subprocess.CalledProcessError as e:
-        return f"LaTeX generation failed: {e}"
-
-    if not os.path.exists(pdf_output):
-        return "PDF generation failed.", 500
-
-    return send_file(pdf_output, as_attachment=True)
-
-
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=8000)
    
