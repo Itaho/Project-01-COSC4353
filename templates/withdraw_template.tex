@@ -1,0 +1,103 @@
+\documentclass[12pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{setspace}
+\usepackage{hyperref}
+
+\titleformat{\section}{\large\bfseries}{}{0em}{}
+
+\begin{document}
+
+\begin{center}
+    \textbf{\Large University of Houston\\ Official Term Withdrawal Form}
+\end{center}
+
+\vspace{1em}
+
+\noindent\textbf{Submit in person to:} \\
+Office of the University Registrar at the Welcome Center \\
+\textbf{or} \\
+Fax to: 713-743-8342
+
+\vspace{1.5em}
+
+\section*{Student Request for Official Term Withdrawal}
+
+\begin{flushleft}
+\textbf{Student Name:} {{ student_name }} \hfill \textbf{myUH ID:} {{ myuh_id }} \\
+\textbf{Phone \#:} {{ phone }} \hfill \textbf{Email:} {{ email }} \\
+\textbf{Program/Plan:} {{ program }} \hfill \textbf{Academic Career:} {{ career }} \\
+\textbf{Withdrawal Term:} {{ term }} \quad Year: {{ year }}
+\end{flushleft}
+
+\vspace{1em}
+
+\noindent\textbf{Initial all that apply:}
+
+{% if aid == 'Yes' %}
+\noindent\underline{\hspace{1.5em}} \textbf{STUDENTS RECEIVING FINANCIAL AID} — I understand that if I withdraw from \textbf{ALL} classes I may owe financial aid back to the university based on federal regulations... I understand that if I am receiving a university scholarship I may lose scholarship eligibility.
+\vspace{1em}
+{% endif %}
+
+{% if intl == 'Yes' %}
+\noindent\underline{\hspace{1.5em}} \textbf{INTERNATIONAL STUDENTS HOLDING F-1 OR J-1 STUDENT VISAS} — I understand that federal regulations require me to obtain authorization for a reduced course load from the International Student and Scholar Services Office (ISSSO) prior to withdrawing from the university and that I have obtained such authorization.
+\vspace{1em}
+{% endif %}
+
+{% if athlete == 'Yes' %}
+\noindent\underline{\hspace{1.5em}} \textbf{STUDENT-ATHLETES} — I understand that I must clear any financial holds related to student-athlete services and return all textbooks, uniforms, and equipment to avoid being charged for those items. I must also meet with Student-Athlete Development and the Office of Athletics’ Compliance...
+\vspace{1em}
+{% endif %}
+
+{% if veteran == 'Yes' %}
+\noindent\underline{\hspace{1.5em}} \textbf{VETERANS} — I understand that an official term withdrawal from the university will automatically initiate a recalculation of tuition, fees and the rate of pursuit (enrollment status) reported to the VA. I understand that withdrawing may impact my GI Bill benefits...
+\vspace{1em}
+{% endif %}
+
+{% if grad == 'Yes' %}
+\noindent\underline{\hspace{1.5em}} \textbf{GRADUATE/PROFESSIONAL STUDENTS} — I understand that any university support (i.e. graduate assignment, DSTF) will be cancelled. Withdrawals after the official reporting day require that I meet with my Academic Advisor and provide instructor-approved drop forms.
+\vspace{1em}
+{% endif %}
+
+{% if doctoral == 'Yes' %}
+\noindent\underline{\hspace{1.5em}} \textbf{DOCTORAL STUDENTS} — I understand that I must file a leave of absence with the Office of Graduate and Professional Studies.
+\vspace{1em}
+{% endif %}
+
+{% if housing == 'Yes' %}
+\noindent\underline{\hspace{1.5em}} \textbf{STUDENT HOUSING} — I understand that my housing agreement outlines important information regarding housing cancelation and refunds. I understand that I need to check out of my room, complete all check out processes, and return my keys to avoid additional fees.
+\vspace{1em}
+{% endif %}
+
+{% if dining == 'Yes' %}
+\noindent\underline{\hspace{1.5em}} \textbf{DINING SERVICES} — I understand that withdrawing from the university does not automatically relieve me of my obligation to pay outstanding charges stemming from my purchase of a UH Dining Services meal plan. \\
+To receive any available credit for the unused portion of my meal plan I must submit a meal plan petition requesting approval for cancellation. Visit \url{http://www.uh.edu/auxiliaryservices/dining/mealpetition.htm}
+\vspace{1em}
+{% endif %}
+
+{% if parking == 'Yes' %}
+\noindent\underline{\hspace{1.5em}} \textbf{PARKING AND TRANSPORTATION} — I understand that withdrawing from the university does not relieve me of my obligation to pay outstanding charges stemming from my purchase of a UH parking permit or parking citations received. To receive any available credit I understand that I must return the permit to Parking and Transportation Services.
+\vspace{1em}
+{% endif %}
+
+
+
+\vspace{1em}
+
+\noindent\textbf{Important Notices:}
+\begin{itemize}[leftmargin=1.5em]
+    \item The university is not responsible for lost refunds or financial aid loss if you fail to seek advisement.
+    \item Withdrawal may affect degree progress and course prerequisites.
+    \item Outstanding balances must be paid before registering or ordering transcripts.
+    \item Refunds are calculated based on the date this form is processed.
+    \item Faxed forms after business hours will be processed the next business day.
+\end{itemize}
+
+\vspace{1em}
+\noindent\textbf{I understand that I am dropping ALL classes and withdrawing from the university.}
+
+\vspace{2em}
+\noindent\textbf{Agreement Confirmed:} {{ '☑ Yes' if agree == 'Yes' else '☐ No' }} \hfill \textbf{Date:} {{ date }}
+
+\end{document}
