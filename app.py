@@ -439,6 +439,47 @@ def petition():
 
 @app.route('/PetitionSubmit', methods=['POST'])
 def submit():
+<<<<<<< HEAD
+=======
+    user_info = session.get("user")
+    if not user_info:
+        return "You must be logged in", 403
+
+    # Gather form data
+    form_data = {
+        'fname': request.form.get('fname', ''),
+        'mname': request.form.get('mname', ''),
+        'lname': request.form.get('lname', ''),
+        'phone': request.form.get('phone', ''),
+        'myUH': request.form.get('myUH', ''),
+        'uhEmail': request.form.get('uhEmail', ''),
+        'program': request.form.get('program', ''),
+        'alias': request.form.get('alias', ''),
+        'purpose_of_petition': request.form.get('purpose_of_petition', ''),
+        'institution_name': request.form.get('institution_name', ''),
+        'city_state_zip': request.form.get('city_state_zip', ''),
+        'courses_transfer': request.form.get('courses_transfer', ''),
+        'hours_transferred': request.form.get('hours_transferred', ''),
+        'transfer_credits': request.form.get('transfer_credits', ''),
+        'explanation': request.form.get('explanation', '')
+    }
+
+    latex_content = petitionTemplate.format(**form_data)
+
+    # Generate a unique ID for the file
+    unique_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+
+    # Use a persistent folder in /home (which Azure preserves)
+    output_dir = os.path.join(os.environ.get("HOME", "/home"), "output")
+    os.makedirs(output_dir, exist_ok=True)
+    
+    tex_filename = os.path.join(output_dir, f"petition_{unique_id}.tex")
+    pdf_filename = os.path.join(output_dir, f"petition_{unique_id}.pdf")
+
+    with open(tex_filename, 'w') as f:
+        f.write(latex_content)
+
+>>>>>>> parent of 4182273 (Update app.py)
     try:
         user_info = session.get("user")
         if not user_info:
@@ -546,13 +587,11 @@ def download_pdf(request_id):
         if not row:
             return f"No PDF found for request_id={request_id}", 404
 
-        filename = os.path.basename(row["document_path"])  # Ensure it's just a filename
-        pdf_path = os.path.join(os.getcwd(), "SavedPdf", filename)
-
+        pdf_path = row["document_path"]
         if not os.path.exists(pdf_path):
             return f"PDF file not found on disk: {pdf_path}", 404
 
-        return send_file(pdf_path, as_attachment=True)
+        return send_file(pdf_path, as_attachment=False)
 
     except Exception as e:
         return f"Error retrieving PDF: {str(e)}", 500
