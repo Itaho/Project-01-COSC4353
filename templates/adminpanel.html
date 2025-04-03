@@ -83,12 +83,15 @@
       padding: 15px;
       border-radius: 5px;
       text-align: center;
+      background: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
     .signature-card h3 {
       margin: 0 0 10px 0;
       font-size: 16px;
       color: #333;
+      word-break: break-all;
     }
 
     .signature-image {
@@ -97,6 +100,13 @@
       object-fit: contain;
       border: 1px solid #eee;
       padding: 5px;
+      margin: 10px 0;
+    }
+
+    .error-text {
+      color: #cc0000;
+      margin-top: 5px;
+      font-size: 14px;
     }
   </style>
 </head>
@@ -172,7 +182,10 @@
           <div class="signature-card">
             <h3>{{ user.username }}</h3>
             {% if user.signature_path %}
-              <img src="{{ url_for('static', filename=user.signature_path) }}" alt="User signature" class="signature-image">
+              <img src="{{ url_for('static', filename=user.signature_path) }}" 
+                   alt="Signature for {{ user.username }}" 
+                   class="signature-image"
+                   onerror="this.onerror=null; this.src=''; this.alt='Error loading signature'; this.parentElement.innerHTML += '<p class=\'error-text\'>Error loading signature</p>';">
             {% else %}
               <p>No signature uploaded</p>
             {% endif %}

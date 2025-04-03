@@ -353,7 +353,12 @@ def upload_signature():
         # Create unique filename using timestamp
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         filename = secure_filename(f"{timestamp}_{file.filename}")
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        
+        # Ensure the signatures directory exists
+        os.makedirs(os.path.join(app.root_path, 'static', 'signatures'), exist_ok=True)
+        
+        # Save file in static/signatures
+        filepath = os.path.join(app.root_path, 'static', 'signatures', filename)
         
         try:
             # Save the file
@@ -365,6 +370,7 @@ def upload_signature():
                 conn = get_db_connection()
                 cursor = conn.cursor()
                 
+                # Store path relative to static directory
                 relative_path = os.path.join('signatures', filename)
                 cursor.execute(
                     "UPDATE users SET signature_path = %s WHERE email = %s",
@@ -375,7 +381,7 @@ def upload_signature():
                 cursor.close()
                 conn.close()
                 
-                # Return the success template instead of plain text
+                # Return the success template
                 return render_template('upload_success.html')
             else:
                 return redirect(url_for('profile', error='User not authenticated'))
