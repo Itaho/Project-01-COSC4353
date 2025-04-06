@@ -6,7 +6,6 @@ import subprocess
 from flask import Flask, request, render_template, redirect, url_for, session, send_file
 from werkzeug.utils import secure_filename
 from datetime import datetime
-from io import BytesIO
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "default_secret_key")
@@ -516,14 +515,11 @@ def submit():
     """, (user_id, 'petition', 'submitted'))
     request_id = cursor.lastrowid
 
-    with open(pdf_filename, 'rb') as f:
-        pdf_blob = f.read()
-    
     cursor.execute("""
-        INSERT INTO documents (request_id, document_path, pdf_blob)
-        VALUES (%s, %s, %s)
-    """, (request_id, pdf_filename, pdf_blob))
-    
+        INSERT INTO documents (request_id, document_path)
+        VALUES (%s, %s)
+    """, (request_id, pdf_filename))
+
     conn.commit()
     cursor.close()
     conn.close()
@@ -536,7 +532,7 @@ def download_pdf(request_id):
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         cursor.execute("""
-            SELECT pdf_blob
+            SELECT document_path
             FROM documents
             WHERE request_id = %s
         """, (request_id,))
@@ -544,14 +540,17 @@ def download_pdf(request_id):
         cursor.close()
         conn.close()
 
-        if not row or not row["pdf_blob"]:
-            return "PDF not found in the database.", 404
+        if not row:
+            return f"No PDF found for request_id={request_id}", 404
 
-        return send_file(BytesIO(row["pdf_blob"]), mimetype="application/pdf", as_attachment=False)
+        pdf_path = row["document_path"]
+        if not os.path.exists(pdf_path):
+            return f"PDF file not found on disk: {pdf_path}", 404
+
+        return send_file(pdf_path, as_attachment=False)
 
     except Exception as e:
         return f"Error retrieving PDF: {str(e)}", 500
-
 
 @app.route("/approve_request", methods=["POST"])
 def approve_request():
@@ -596,8 +595,6 @@ def withdraw():
     return render_template("withdrawForm.html")
 
 # 3. Route to process withdrawal form submission and generate LaTeX PDF
-from io import BytesIO  # Add this import if not already present
-
 @app.route("/WithdrawSubmit", methods=["POST"])
 def submit_withdraw():
     user_info = session.get("user")
@@ -635,60 +632,63 @@ def submit_withdraw():
 
     # Generate filenames
     unique_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    
+    # Create static/pdfs directory if it doesn't exist
     pdf_dir = os.path.join(app.root_path, "static", "pdfs")
     os.makedirs(pdf_dir, exist_ok=True)
-
+    
+    # Define paths
+    relative_path = os.path.join("static", "pdfs", f"withdraw_{unique_id}.pdf")
+    full_path = os.path.join(app.root_path, relative_path)
     tex_filename = os.path.join(pdf_dir, f"withdraw_{unique_id}.tex")
-    pdf_filename = os.path.join(pdf_dir, f"withdraw_{unique_id}.pdf")
 
-    # Write .tex file
+    # Write LaTeX file
     with open(tex_filename, 'w') as f:
         f.write(rendered_tex)
 
-    # Compile LaTeX to PDF
     try:
+        # Run pdflatex in the same directory as the tex file
         subprocess.run(['pdflatex', '-output-directory', pdf_dir, tex_filename], check=True)
     except subprocess.CalledProcessError as e:
         return f"LaTeX generation failed: {e}"
 
-    if not os.path.exists(pdf_filename):
+    if not os.path.exists(full_path):
         return "PDF generation failed.", 500
 
     # Store in database
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-
+        
+        # Get user_id
         cursor.execute("SELECT user_id FROM users WHERE email=%s", (user_info["email"],))
         user_row = cursor.fetchone()
         if not user_row:
             cursor.close()
             conn.close()
             return "User not found in DB", 404
-
+            
         user_id = user_row["user_id"]
-
+        
+        # Create request
         cursor.execute("""
             INSERT INTO requests (user_id, form_type, status)
             VALUES (%s, %s, %s)
         """, (user_id, 'withdrawal', 'submitted'))
+        
         request_id = cursor.lastrowid
-
-        # Read PDF as binary
-        with open(pdf_filename, 'rb') as f:
-            pdf_blob = f.read()
-
+        
+        # Store document path
         cursor.execute("""
-            INSERT INTO documents (request_id, document_path, pdf_blob)
-            VALUES (%s, %s, %s)
-        """, (request_id, pdf_filename, pdf_blob))
-
+            INSERT INTO documents (request_id, document_path)
+            VALUES (%s, %s)
+        """, (request_id, relative_path))
+        
         conn.commit()
         cursor.close()
         conn.close()
-
-        # Serve file directly from memory
-        return send_file(BytesIO(pdf_blob), mimetype="application/pdf", as_attachment=True)
-
+        
     except Exception as e:
         return f"Database error: {str(e)}", 500
+
+    return send_file(full_path, as_attachment=True)
