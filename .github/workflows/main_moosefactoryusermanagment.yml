@@ -10,16 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      AZURE_CLIENT_ID:       d09596e5-b157-45e3-b8cf-1e49844276f6
-      AZURE_CLIENT_SECRET:   lN18Q~_yJnB2rSELcYuV~fgwWtxKrIG1YYJrsach
-      AZURE_SUBSCRIPTION_ID: e6db8f7f-6fb1-4845-9d9d-df9f7b68cbb7
-      AZURE_TENANT_ID:       170bbabd-a2f0-4c90-ad4b-0e8f0f0c4259
-
-      ACR_NAME:              moosefactoryuser
-      ACR_LOGIN_SERVER:      moosefactoryuser.azurecr.io
-      IMAGE_NAME:            moosefactoryuser
-      APP_NAME:              MooseFactoryUserManagment
-      RESOURCE_GROUP:        MooseFactoryUserManagment_group
+      ACR_NAME:         moosefactoryuser
+      ACR_LOGIN_SERVER: moosefactoryuser.azurecr.io
+      IMAGE_NAME:       moosefactoryuser
+      APP_NAME:         MooseFactoryUserManagment
+      RESOURCE_GROUP:   MooseFactoryUserManagment_group
 
     steps:
       - name: Checkout code
@@ -28,22 +23,28 @@ jobs:
       - name: Azure Login (inline creds)
         uses: azure/login@v1
         with:
-          client-id:       ${{ env.AZURE_CLIENT_ID }}
-          client-secret:   ${{ env.AZURE_CLIENT_SECRET }}
-          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
-          tenant-id:       ${{ env.AZURE_TENANT_ID }}
+          creds: >-
+            {
+              "clientId":"d09596e5-b157-45e3-b8cf-1e49844276f6",
+              "clientSecret":"lN18Q~_yJnB2rSELcYuV~fgwWtxKrIG1YYJrsach",
+              "subscriptionId":"e6db8f7f-6fb1-4845-9d9d-df9f7b68cbb7",
+              "tenantId":"170bbabd-a2f0-4c90-ad4b-0e8f0f0c4259",
+              "activeDirectoryEndpointUrl":"https://login.microsoftonline.com",
+              "resourceManagerEndpointUrl":"https://management.azure.com/",
+              "activeDirectoryGraphResourceId":"https://graph.windows.net/",
+              "sqlManagementEndpointUrl":"https://management.core.windows.net:8443/",
+              "galleryEndpointUrl":"https://gallery.azure.com/",
+              "managementEndpointUrl":"https://management.core.windows.net/"
+            }
 
       - name: Login to ACR via Azure CLI
         run: az acr login --name ${{ env.ACR_NAME }}
 
       - name: Build Docker image
-        run: |
-          docker build \
-            -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:latest .
+        run: docker build -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:latest .
 
       - name: Push to ACR
-        run: |
-          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:latest
+        run: docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:latest
 
       - name: Configure Web App to use new image
         run: |
