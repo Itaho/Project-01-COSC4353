@@ -8,21 +8,30 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     env:
-      ACR_NAME: moosefactoryuser
-      ACR_LOGIN_SERVER: moosefactoryuser.azurecr.io
-      IMAGE_NAME: moosefactoryuser
-      APP_NAME: MooseFactoryUserManagment
-      RESOURCE_GROUP: MooseFactoryUserManagment_group
+      AZURE_CLIENT_ID:       d09596e5-b157-45e3-b8cf-1e49844276f6
+      AZURE_CLIENT_SECRET:   lN18Q~_yJnB2rSELcYuV~fgwWtxKrIG1YYJrsach
+      AZURE_SUBSCRIPTION_ID: e6db8f7f-6fb1-4845-9d9d-df9f7b68cbb7
+      AZURE_TENANT_ID:       170bbabd-a2f0-4c90-ad4b-0e8f0f0c4259
+
+      ACR_NAME:              moosefactoryuser
+      ACR_LOGIN_SERVER:      moosefactoryuser.azurecr.io
+      IMAGE_NAME:            moosefactoryuser
+      APP_NAME:              MooseFactoryUserManagment
+      RESOURCE_GROUP:        MooseFactoryUserManagment_group
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Azure Login
+      - name: Azure Login (inline creds)
         uses: azure/login@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          client-id:       ${{ env.AZURE_CLIENT_ID }}
+          client-secret:   ${{ env.AZURE_CLIENT_SECRET }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+          tenant-id:       ${{ env.AZURE_TENANT_ID }}
 
       - name: Login to ACR via Azure CLI
         run: az acr login --name ${{ env.ACR_NAME }}
