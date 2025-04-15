@@ -1,8 +1,4 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-# More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
-
-name: Build and deploy Python app to Azure Web App - MooseFactoryUserManagment
+name: Build and Deploy Container to ACR and Azure App Service
 
 on:
   push:
@@ -11,61 +7,50 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read #This is required for actions/checkout
+    env:
+      ACR_NAME: moosefactoryuser
+      IMAGE_NAME: moosefactoryuser
+      ACR_LOGIN_SERVER: moosefactoryuser.azurecr.io
+      APP_NAME: MooseFactoryUserManagment
+      RESOURCE_GROUP: MooseFactoryUserManagment_group
+      
+      AZURE_CREDENTIALS: '{
+         "clientId": "YOUR_CLIENT_ID",
+         "clientSecret": "YOUR_CLIENT_SECRET",
+         "subscriptionId": "YOUR_SUBSCRIPTION_ID",
+         "tenantId": "YOUR_TENANT_ID",
+         "activeDirectoryEndpointUrl": "https://login.microsoftonline.com",
+         "resourceManagerEndpointUrl": "https://management.azure.com/",
+         "activeDirectoryGraphResourceId": "https://graph.windows.net/",
+         "sqlManagementEndpointUrl": "https://management.core.windows.net:8443/",
+         "galleryEndpointUrl": "https://gallery.azure.com/",
+         "managementEndpointUrl": "https://management.core.windows.net/"
+      }'
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-      - name: Set up Python version
-        uses: actions/setup-python@v5
+      - name: Log in to Azure
+        uses: azure/login@v1
         with:
-          python-version: '3.12'
+          creds: ${{ env.AZURE_CREDENTIALS }}
 
-      - name: Create and start virtual environment
+      - name: Build Docker Image
         run: |
-          python -m venv venv
-          source venv/bin/activate
-      
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-        
-      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
+          docker build -t $ACR_LOGIN_SERVER/$IMAGE_NAME:latest .
 
-      - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
+      - name: Push Docker Image to ACR
+        run: |
+          docker push $ACR_LOGIN_SERVER/$IMAGE_NAME:latest
 
-      - name: Upload artifact for deployment jobs
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-app
-          path: |
-            release.zip
-            !venv/
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    environment:
-      name: 'Production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: python-app
-
-      - name: Unzip artifact for deployment
-        run: unzip release.zip
-
-      
-      - name: 'Deploy to Azure Web App'
-        uses: azure/webapps-deploy@v3
-        id: deploy-to-webapp
-        with:
-          app-name: 'MooseFactoryUserManagment'
-          slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_D4652A2867734149ADAC6110C9ED96BA }}
+      - name: Deploy to Azure App Service using the Container Image
+        run: |
+          az webapp config container set \
+            --name $APP_NAME \
+            --resource-group $RESOURCE_GROUP \
+            --docker-custom-image-name $ACR_LOGIN_SERVER/$IMAGE_NAME:latest \
+            --docker-registry-server-url https://$ACR_LOGIN_SERVER
+          az webapp restart --name $APP_NAME --resource-group $RESOURCE_GROUP
