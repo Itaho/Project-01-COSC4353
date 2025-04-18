@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inter-Institutional Registration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            display: flex;
+            justify-content: center;
+            padding-top: 30px;
+        }
+
+        .form-box {
+            border: 2px solid red;
+            border-radius: 10px;
+            padding: 30px;
+            width: 700px;
+            text-align: center;
+        }
+
+        h1 {
+            color: red;
+        }
+
+        input[type="text"], input[type="email"], input[type="date"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid red;
+            border-radius: 5px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+
+        .checkbox-column {
+            display: flex;
+            flex-direction: column;
+            width: 48%;
+            text-align: left;
+        }
+
+        label {
+            margin: 5px 0;
+        }
+
+        .submit-btn {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 20px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+<div class="form-box">
+    <h1>Inter-Institutional Registration</h1>
+    <form action="/generate_pdf" method="post">
+        <input type="text" name="fullname" placeholder="Full Name" required>
+        <input type="text" name="dob" placeholder="Date of Birth">
+        <input type="text" name="gender" placeholder="Gender">
+        <input type="text" name="address" placeholder="Current Address">
+        <input type="text" name="city" placeholder="City">
+        <input type="text" name="state" placeholder="State">
+        <input type="text" name="zipcode" placeholder="Zip Code">
+        <input type="text" name="country" placeholder="Country">
+        <input type="text" name="homephone" placeholder="Home Phone">
+        <input type="text" name="cellphone" placeholder="Cell Phone">
+        <input type="email" name="email" placeholder="Email">
+        <input type="text" name="socialsecurity" placeholder="SSN (optional)">
+        <input type="text" name="place_of_birth" placeholder="Place of Birth">
+
+        <label><input type="checkbox" name="citizen_status" value="Yes"> U.S. Citizen</label>
+        <label><input type="checkbox" name="texas_resident" value="Yes"> Texas Resident</label>
+        <input type="text" name="visatype" placeholder="Visa Type (if not U.S. citizen)">
+
+        <label><input type="checkbox" name="criminal_check" value="Yes"> CBC on File</label>
+
+        <label><input type="checkbox" name="hispanic" value="Yes"> Hispanic/Latino</label>
+
+        <div class="checkbox-group">
+            <div class="checkbox-column">
+                <label><input type="checkbox" name="americanIndian"> American Indian/Alaska Native</label>
+                <label><input type="checkbox" name="asian"> Asian</label>
+                <label><input type="checkbox" name="pacificislander"> Native Hawaiian/Pacific Islander</label>
+            </div>
+            <div class="checkbox-column">
+                <label><input type="checkbox" name="africanamerican"> Black/African American</label>
+                <label><input type="checkbox" name="white"> White</label>
+            </div>
+        </div>
+
+        <input type="text" name="tibenumber" placeholder="Tribal Enrollment Number">
+        <input type="text" name="describeyourself" placeholder="Describe Yourself">
+
+        <input type="text" name="home_institution" placeholder="Home Institution">
+        <input type="text" name="studentID" placeholder="Home Institution Student ID">
+        <input type="text" name="graduationDate" placeholder="Anticipated Graduation Date">
+
+        <input type="text" name="host_institution" placeholder="Host Institution">
+        <input type="text" name="studentID2" placeholder="Host Institution Student ID">
+        <input type="text" name="creditHours" placeholder="Credit Hours Previously Completed">
+
+        <label>Semester:</label>
+        <label><input type="radio" name="semester" value="Spring"> Spring</label>
+        <label><input type="radio" name="semester" value="Summer"> Summer</label>
+        <label><input type="radio" name="semester" value="Fall"> Fall</label>
+
+        <input type="text" name="subject" placeholder="Subject/Course #">
+        <input type="text" name="courseTitle" placeholder="Course Title">
+        <input type="text" name="creditHours" placeholder="Credit Hours">
+        <input type="text" name="instructorSignature" placeholder="Instructor Signature">
+        <input type="text" name="date" placeholder="Date">
+
+        <input type="text" name="advisor_signature" placeholder="Advisor Signature">
+        <input type="text" name="advisor_name" placeholder="Advisor Name">
+        <input type="text" name="advisor_date" placeholder="Advisor Date">
+
+        <input type="text" name="director_signature" placeholder="Director Signature">
+        <input type="text" name="director_name" placeholder="Director Name">
+        <input type="text" name="director_date" placeholder="Director Date">
+
+        <input type="text" name="iso_signature" placeholder="ISO Signature">
+        <input type="text" name="iso_name" placeholder="ISO Name">
+        <input type="text" name="iso_date" placeholder="ISO Date">
+
+        <input type="text" name="registrar_signature" placeholder="Registrar Signature">
+        <input type="text" name="registrar_name" placeholder="Registrar Name">
+        <input type="text" name="registrar_date" placeholder="Registrar Date">
+
+        <input type="text" name="student_signature" placeholder="Student Signature">
+        <input type="date" name="signature_date" placeholder="Signature Date">
+
+        <input type="submit" class="submit-btn" value="Submit">
+    </form>
+</div>
+</body>
+</html>

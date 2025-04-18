@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Undgergraduate Petition Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            display: flex;
+            justify-content: center;
+            padding-top: 30px;
+        }
+        .form-box {
+            border: 2px solid red;
+            border-radius: 10px;
+            padding: 30px;
+            width: 800px;
+            text-align: center;
+        }
+        h1 {
+            color: red;
+        }
+        input[type="text"], input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid red;
+            border-radius: 5px;
+        }
+        .checkbox-column {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+        .submit-btn {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 20px;
+            width: 100%;
+        }
+        textarea {
+            width: 100%;
+            height: 80px;
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid red;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+<div class="form-box">
+    <h1>Undergraduate Petition Form</h1>
+    <form action="/UndergraduatePetitionSubmit" method="post">
+        <input type="text" name="last_name" placeholder="Last Name" required>
+        <input type="text" name="first_name" placeholder="First Name" required>
+        <input type="text" name="middle_name" placeholder="Middle Name">
+        <input type="text" name="psid" placeholder="My UH# / HA#">
+        <input type="text" name="phone" placeholder="Phone Number">
+        <input type="text" name="address" placeholder="Mailing Address">
+        <input type="text" name="city" placeholder="City">
+        <input type="text" name="state" placeholder="State">
+        <input type="text" name="zip" placeholder="ZIP Code">
+        <input type="email" name="email" placeholder="Email">
+        <input type="text" name="current_plan" placeholder="Current Program/Plan">
+        <input type="text" name="current_career" placeholder="Current Career">
+        <input type="text" name="effective_before" placeholder="Effective BEFORE First Class Day">
+        <input type="text" name="effective_after" placeholder="Effective AFTER First Class Day">
+
+        <input type="text" name="update" placeholder="Update Student's Program Status">
+        <input type="text" name="status1" placeholder="Admission Status From">
+        <input type="text" name="status2" placeholder="Admission Status To">
+        <input type="text" name="career" placeholder="New Career">
+        <input type="text" name="change1" placeholder="Program Change From">
+        <input type="text" name="change2" placeholder="Program Change To">
+        <input type="text" name="major1" placeholder="Major Change From">
+        <input type="text" name="major2" placeholder="Major Change To">
+        <input type="text" name="plan1" placeholder="Degree Objective From">
+        <input type="text" name="plan2" placeholder="Degree Objective To">
+        <input type="text" name="catalog" placeholder="Catalog Year">
+        <input type="text" name="program" placeholder="Program/Plan">
+        <input type="text" name="plan" placeholder="Additional Plan">
+        <input type="text" name="other" placeholder="BA/BS/Other">
+        <input type="text" name="degree" placeholder="Second Degree">
+        <input type="text" name="minor1" placeholder="Minor Change From">
+        <input type="text" name="minor2" placeholder="Minor Change To">
+        <input type="text" name="minor" placeholder="Add Minor">
+
+        <textarea name="explanation1" placeholder="Explanation of Request - Line 1"></textarea>
+        <textarea name="explanation2" placeholder="Explanation of Request - Line 2"></textarea>
+        <textarea name="explanation3" placeholder="Explanation of Request - Line 3"></textarea>
+
+        <input type="text" name="username" placeholder="Username for Signature (do not include @uh.edu)">
+
+        <input type="text" name="printed_name1" placeholder="Advisor/Instructor Printed Name">
+        <input type="text" name="date1" placeholder="Advisor/Instructor Date">
+        <input type="text" name="printed_name2" placeholder="Chairperson Printed Name">
+        <input type="text" name="date2" placeholder="Chairperson Date">
+        <input type="text" name="printed_name3" placeholder="College Dean Printed Name">
+        <input type="text" name="date3" placeholder="College Dean Date">
+        <input type="text" name="printed_name4" placeholder="Sr. Vice Provost Printed Name">
+        <input type="text" name="date4" placeholder="Sr. Vice Provost Date">
+
+        <textarea name="comments1" placeholder="Comment 1"></textarea>
+        <textarea name="comments2" placeholder="Comment 2"></textarea>
+        <textarea name="comments3" placeholder="Comment 3"></textarea>
+        <textarea name="comments4" placeholder="Comment 4"></textarea>
+        <textarea name="comments5" placeholder="Comment 5"></textarea>
+
+        <input type="submit" class="submit-btn" value="Submit">
+    </form>
+</div>
+</body>
+</html>

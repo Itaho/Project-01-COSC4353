@@ -1,0 +1,270 @@
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[version=4]{mhchem}
+\usepackage{tabularx}
+\usepackage{stmaryrd}
+\usepackage{graphicx}
+\usepackage[export]{adjustbox}
+\usepackage[a4paper, margin=.5in]{geometry}
+\graphicspath{ {./images/} }
+\usepackage{hyperref}
+\usepackage{pifont}
+\usepackage[x11names]{xcolor}
+\hypersetup{colorlinks=true, linkcolor=blue, filecolor=magenta, urlcolor=cyan,}
+\urlstyle{same}
+
+\begin{document}
+
+\fontfamily{phv}\selectfont
+\section*{\centering Inter-Institutional Course Registration Form}
+\section*{Registration Rules and Guidelines}
+\begin{itemize}
+\setlength{\itemsep}{0.05em}
+  \item Student must be enrolled full-time between registration at home and host institutions.
+  \item Requested class must not be offered by the home institution during the term the student registers at one of the participating institutions.
+  \item Requested class must be necessary for completion of graduate degree.
+  \item Number of credits allowed per term/semester may vary depending on the policy of the host school.
+  \item All approval signatures must be completed.
+  \item Foreign students taking inter-institutional courses - You must check with your International Services Office regarding additional paperwork. Most host institutions will require a copy of your I-20/DS-2019, visa stamp, passport ID page, and I94. Some will require new documentation every semester.
+\end{itemize}
+
+\section*{Form Instructions}
+
+\noindent
+\begin{minipage}{0.5\textwidth}
+    \begin{enumerate}
+    \setlength{\itemsep}{0.05em}
+        \item Please print.
+        \item Select the course(s) using the host school's course schedule.
+        \item Fill out form completely.
+        \item Obtain approval from (host institution) instructor for each course.
+        \item Obtain approval from (home institution) academic advisor.
+        \item Obtain approval from (home institution) graduate program director/dean/designee at home school.
+        \item Obtain approval from International Services Office (if applicable).
+    \end{enumerate}
+\end{minipage}%
+\hspace{0.2cm}
+\begin{minipage}{0.5\textwidth}
+    \begin{enumerate}
+    \setlength{\itemsep}{0.05em}
+        \setcounter{enumi}{7}
+        \item Obtain approval from home school official designee. Ask home school if there are any additional required forms.
+        \item Obtain approval from host school registrar or official designee. Ask host school official if there are any additional required forms.
+        \item Provide a copy of completed form to home school official designee.
+        \item Provide a copy of completed form to International Services Office at home school (if applicable).
+        \item Keep copy of form for your records.
+    \end{enumerate}
+\end{minipage}
+
+\section*{Student Information}
+
+{\underline{\textbf{Demographic Information}}}
+\begin{center}
+    \textbf{\footnotesize Name:} {{ fullname }}
+    \hrulefill 
+    \hspace{1cm} 
+    \textbf{\footnotesize Gender:} 
+    {{ gender }}
+
+\vspace{0.4cm}
+
+\textbf{\footnotesize Date of Birth: {{ dob }}} \hrulefill  
+
+\vspace{0.4cm}
+
+\noindent\textbf{\footnotesize Current Address: {{ address }}} \hrulefill  
+
+\vspace{0.4cm}
+
+\noindent\textbf{\footnotesize City: {{ city }}} \hrulefill \quad \textbf{\footnotesize State: {{ state }}} \hrulefill  
+
+\vspace{0.4cm}
+
+\noindent\textbf{\footnotesize Zip Code: {{ zipcode }}} \hrulefill \quad \textbf{\footnotesize Country: {{ country }}} \hrulefill  
+
+\vspace{0.4cm}
+
+\noindent\textbf{\footnotesize Home Phone: {{ homephone }}} \hrulefill \quad \textbf{\footnotesize Cell Phone: {{ cellphone }}} \hrulefill  
+
+\vspace{0.4cm}
+
+\noindent\textbf{\footnotesize Email: {{ email }}} \hrulefill  
+
+\vspace{0.4cm}
+
+\noindent\textbf{\footnotesize Social Security Number: {{ socialsecurity }}} \hrulefill (\footnotesize optional)  
+
+\vspace{0.4cm}
+
+\noindent\textbf{\footnotesize Place of Birth: {{ place_of_birth }}} \hrulefill \quad \textit{(\footnotesize City, State, Country)}  
+
+\begin{tabular}{p{8cm} p{8cm}}
+    \textbf{\footnotesize Are you a U.S. Citizen?} {{ citizen_status }} &
+    \textbf{\footnotesize Are you classified as a Texas resident at your home institution?} {{ texas_resident }}
+\end{tabular} 
+
+\vspace{0.4cm}
+
+\noindent\textbf{\footnotesize If not a U.S. Citizen, what is your visa type and status? {{ visatype }}} \hrulefill  
+
+\vspace{0.4cm}
+
+\noindent\textbf{\footnotesize Criminal Background Check on file at home institution?} {{ criminal_check }}
+
+\vspace{0.2cm}
+
+\noindent\textit{\tiny Please contact your school’s student affairs office for CBC request form.}
+\end{center}
+
+\noindent{\underline{\textbf{Race/Ethnicity}}}\\
+\begin{flushleft}
+    \noindent{\footnotesize Are you Hispanic/Latino?} {{ hispanic }}
+
+\vspace{0.2cm}
+\noindent\textit{\footnotesize Regardless of your answer to the previous question, select one or more of the following ethnicities that best describe you.}  
+
+\vspace{0.2cm}
+\noindent {{ ethnicities }}
+
+\vspace{0.2cm}
+\hspace{2cm} \footnotesize Are you enrolled? \hspace{1cm} {{ tribal_enrollment }}
+
+\vspace{0.2cm}
+\noindent \CheckBox[name=asian, checkboxsymbol=\ding{52}] \quad \quad {\footnotesize Asian (including Indian subcontinent and Philippines)} \hspace{2cm} \CheckBox[name=pacificislander, checkboxsymbol=\ding{52}] \quad \quad {\footnotesize Native Hawaiian or Other Pacific Islander (Original Peoples)}
+
+\vspace{0.2cm}
+\noindent \CheckBox[name=africanamerican, checkboxsymbol=\ding{52}] \quad \quad {\footnotesize Black or African American (including Africa and Caribbean} \hspace{2cm} \CheckBox[name=white, checkboxsymbol=\ding{52}] \quad \quad {\footnotesize White (including Middle Eastern)}  
+
+\vspace{0.2cm}
+\noindent {\footnotesize Please describe yourself: {{ describeyourself }}} \hrulefill{\hspace{15cm}}
+\end{flushleft}
+
+
+\footnotesize \noindent E-mail \href{mailto:registrar@rice.edu}{\footnotesize registrar@rice.edu} \footnotesize I Office 713-348-4999 I Fax 713-348-5921 I Office of the Registrar-MS 57 I 6100 Main St. I Houston, TX 77005 I \href{http://registrar.rice.edu}{\footnotesize registrar.rice.edu}
+
+\section*{Institution Information}
+I am a full-time graduate student at:\\
+\begin{tabular*}{\textwidth}{@{\extracolsep{6pt}} lll}
+    \CheckBox[name=baylormedicine, checkboxsymbol=\ding{52}] \quad \quad {\footnotesize Baylor College of Medicine} & \CheckBox[name=uthealthscience, checkboxsymbol=\ding{52}] \quad \quad {\footnotesize UT Health Science Center } & \CheckBox[name=texasatmibt, checkboxsymbol=\ding{52}] \quad \quad {\footnotesize Texas A\&M IBT} \\
+    \CheckBox[name=uh, checkboxsymbol=\ding{52}] \quad \quad {\footnotesize University of Houston} & \CheckBox[name=rice, checkboxsymbol=\ding{52}] \quad \quad {\footnotesize Rice University } & \hspace{.9cm} \makebox[6cm][l]{\footnotesize Home Institution Student ID Number:\TextField[name=studentID, width=2cm]{}} \\
+    \CheckBox[name=medicalbranch, checkboxsymbol=\ding{52}] \quad \quad {\footnotesize University of Texas Medical Branch}  & \CheckBox[name=mdanderson, checkboxsymbol=\ding{52}] \quad \quad {\footnotesize MD Anderson Cancer Center}  & \hspace{.9cm} {\footnotesize Anticipated Graduation Date:\TextField[name=graduationDate, width=3cm]{}} \\
+\end{tabular*}
+
+\vspace{0.5cm}
+
+\noindent I wish to enroll in a course or courses under the inter-institutional agreement at:\\
+\begin{tabular*}{\textwidth}{@{\extracolsep{6pt}} lll}
+    \CheckBox[name=baylormedicine2, checkboxsymbol=\ding{52}] \quad \quad {\footnotesize Baylor College of Medicine} & \CheckBox[name=uthealthscience2, checkboxsymbol=\ding{52}] \quad \quad {\footnotesize UT Health Science Center } & \CheckBox[name=mdanderson2, checkboxsymbol=\ding{52}] \quad \quad {\footnotesize MD Anderson Cancer Center} \\
+    \CheckBox[name=uh2, checkboxsymbol=\ding{52}] \quad \quad {\footnotesize University of Houston} & \CheckBox[name=rice2, checkboxsymbol=\ding{52}] \quad \quad {\footnotesize Rice University } & \CheckBox[name=texasatmibt2, checkboxsymbol=\ding{52}] \quad \quad {\footnotesize Texas A\&M IBT} \\
+    \CheckBox[name=medicalbranch2, checkboxsymbol=\ding{52}] \quad \quad {\footnotesize University of Texas Medical Branch} & \hspace{.95cm}{\footnotesize Home Institution Student ID Number:\TextField[name=studentID2, width=2cm]{}} &  \\
+    & {\footnotesize Host Institution Credit Hours Previously Completed (if previously attended):\TextField[name=creditHours, width=2cm]{}}  \\
+\end{tabular*}
+
+\section*{Course Information}
+Semester: \CheckBox[name=springsemester, checkboxsymbol=\ding{52}] \quad \quad {\footnotesize Spring}  \CheckBox[name=summersemester, checkboxsymbol=\ding{52}] \quad \quad {\footnotesize Summer }  \CheckBox[name=fallsemester, checkboxsymbol=\ding{52}] \quad \quad {\footnotesize Fall}
+
+\begin{flushleft}
+    \begin{tabularx}{\textwidth}{|X|X|c|X|c|}
+    \hline
+    \begin{tabular}{c} \textbf{Subject/Course \#} \\ (\tiny e.g. Math 212) \end{tabular}  
+    & \begin{tabular}{c} \textbf{Course Title} \\ (\tiny e.g. Multivariate Calculus) \end{tabular}  
+    & \begin{tabular}{c} \textbf{Credit Hours} \end{tabular}  
+    & \begin{tabular}{c} \textbf{Instructor Signature} \end{tabular}  
+    & \begin{tabular}{c} \textbf{Date} \end{tabular} \\
+    \hline
+    \TextField[name=subject, width=3cm]{}
+    & \TextField[name=courseTitle, width=3cm]{}
+    & \TextField[name=creditHours, width=3cm]{}
+    & \TextField[name=instructorSignature, width=3cm]{}
+    & \TextField[name=date, width=3cm]{}
+    \\
+    \hline
+    \end{tabularx}
+    \end{flushleft}
+
+
+\section*{Approvals}
+\begin{center}
+\begin{tabular}{l}
+
+\IfFileExists{../../Signatures/signature_admin.png}{%
+  \noindent
+  \raisebox{-0.5\height}{\includegraphics[width=0.2\textwidth, height=1.5cm]{../../Signatures/signature_admin.png}}\\[-0.5cm]
+}
+
+\makebox[6cm][l]{\hrulefill} \hspace{0.5cm}
+\makebox[6.5cm][l]{\hrulefill} \hspace{0.5cm}
+\raisebox{1\height}{\today}\\[0.5cm]
+
+\makebox[5cm][l]{\textit {\scriptsize Academic Advisor Signature}} \hrulefill \hspace{2cm}
+\makebox[5cm][l]{\textit {\scriptsize Academic Advisor Printed Name}} \hrulefill \hspace{2cm}
+\makebox[5cm][l]{\textit {\scriptsize Date}} \hrulefill
+
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{l}
+
+\makebox[6cm][l]{\hrulefill} \hspace{1cm}
+\makebox[6.5cm][l]{\hrulefill} \hspace{0.5cm}
+\makebox[2cm][l]{\hrulefill} \\
+\makebox[5cm][l]{\textit {\scriptsize Graduate Program Director/Dean Designee Signature }} \hrulefill \hspace{2cm}
+\makebox[5cm][l]{\textit {\scriptsize Graduate Program Director/Dean/Designee Printed Name}} \hrulefill \hspace{2cm}
+\makebox[5cm][l]{\textit {\scriptsize Date}} \hrulefill
+
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{l}
+
+\makebox[6cm][l]{\hrulefill} \hspace{1cm}
+\makebox[6.5cm][l]{\hrulefill} \hspace{0.5cm}
+\makebox[2cm][l]{\hrulefill} \\
+\makebox[5cm][l]{\textit {\scriptsize Home Institution International Services Office Signature}} \hrulefill \hspace{2cm}
+\makebox[5cm][l]{\textit {\scriptsize Home Institution International Services Office Printed Name}} \hrulefill \hspace{2cm}
+\makebox[5cm][l]{\textit {\scriptsize Date}} \hrulefill
+
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{l}
+
+\makebox[6cm][l]{\hrulefill} \hspace{1cm}
+\makebox[6.5cm][l]{\hrulefill} \hspace{0.5cm}
+\makebox[2cm][l]{\hrulefill} \\
+\makebox[5cm][l]{\textit {\scriptsize Home School Registrar/Designee Signature}} \hrulefill \hspace{2cm}
+\makebox[5cm][l]{\textit {\scriptsize Home School Registrar/Designee Printed Name}} \hrulefill \hspace{2cm}
+\makebox[5cm][l]{\textit {\scriptsize Date}} \hrulefill
+
+\end{tabular}
+\end{center}
+
+
+
+\section*{Student Signature}
+\textit {By signing and submitting this agreement, you: 1) confirm that you meet the criteria to participate in this program; 2) confirm that the information you have supplied is correct; 3) consent to having the host institution send your home institution a transcript at the conclusion of the semester/term in which you are enrolled.}
+\newline
+Student Signature:
+\IfFileExists{../../Signatures/signature_{username}.png}{%
+  \noindent
+  \raisebox{-0.1\height}{\includegraphics[width=0.3\textwidth, height=2cm]{../../Signatures/signature_{username}.png}}
+  \hspace{-0.3\textwidth} \hrulefill
+  \hspace{0.1\textwidth} Date: \raisebox{0.1\height}{\today}
+  \hspace{-0.115\textwidth} \hrulefill 
+  \\[10pt]
+}{%
+\hspace{0.01\textwidth} \hrulefill
+\hspace{0.1\textwidth} 
+Date: \raisebox{0.1\height}{\today}
+\hspace{-0.115\textwidth} \hrulefill 
+\\[10pt]}
+
+
+\end{document}

@@ -693,5 +693,151 @@ def submit_withdraw():
 
     return send_file(full_path, as_attachment=True)
 
+@app.route('/InterInstitutionalSubmit', methods=['POST'])
+def submit_inter_institutional():
+    user_info = session.get("user")
+    if not user_info:
+        return "You must be logged in", 403
+
+    # Gather form data dynamically
+    form_data = {key: request.form.get(key, '') for key in request.form}
+
+    # Load the LaTeX template file from disk
+    template_path = os.path.join("templates", "LatexTemplates", "Inter_Institutional.tex")
+    try:
+        with open(template_path, 'r') as f:
+            latex_template = f.read()
+    except FileNotFoundError:
+        return f"LaTeX template not found at {template_path}", 500
+
+    # Render LaTeX content using Jinja2
+    from jinja2 import Template
+    latex_content = Template(latex_template).render(**form_data)
+
+    # Create filenames using user email prefix
+    user_prefix = user_info["email"].split('@')[0]
+    unique_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    output_dir = os.path.join(os.environ.get("HOME", "/home"), "output")
+    os.makedirs(output_dir, exist_ok=True)
+
+    tex_filename = os.path.join(output_dir, f"{user_prefix}_interinstitutional_{unique_id}.tex")
+    pdf_filename = os.path.join(output_dir, f"{user_prefix}_interinstitutional_{unique_id}.pdf")
+
+    with open(tex_filename, 'w') as f:
+        f.write(latex_content)
+
+    # Generate PDF with pdflatex
+    try:
+        subprocess.run(['pdflatex', '-output-directory', output_dir, tex_filename], check=True)
+    except subprocess.CalledProcessError as e:
+        return f"An error occurred during PDF generation: {e}"
+
+    if not os.path.exists(pdf_filename):
+        return f"PDF generation failed: {pdf_filename} not found", 500
+
+    # Save metadata to DB
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT user_id FROM users WHERE email=%s", (user_info["email"],))
+    user_row = cursor.fetchone()
+    if not user_row:
+        cursor.close()
+        conn.close()
+        return "User not found in DB", 404
+
+    user_id = user_row["user_id"]
+
+    cursor.execute("""
+        INSERT INTO requests (user_id, form_type, status)
+        VALUES (%s, %s, %s)
+    """, (user_id, 'interinstitutional', 'submitted'))
+    request_id = cursor.lastrowid
+
+    cursor.execute("""
+        INSERT INTO documents (request_id, document_path)
+        VALUES (%s, %s)
+    """, (request_id, pdf_filename))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return send_file(pdf_filename, as_attachment=True)
+
+@app.route('/UndergraduatePetitionSubmit', methods=['POST'])
+def submit_undergrad_petition():
+    user_info = session.get("user")
+    if not user_info:
+        return "You must be logged in", 403
+
+    # Collect all form fields dynamically
+    form_data = {key: request.form.get(key, '') for key in request.form}
+
+    # Load LaTeX template
+    template_path = os.path.join("templates", "LatexTemplates", "UndergradForm.tex")
+    try:
+        with open(template_path, 'r') as f:
+            latex_template = f.read()
+    except FileNotFoundError:
+        return f"LaTeX template not found at {template_path}", 500
+
+    # Render LaTeX with form data
+    from jinja2 import Template
+    latex_content = Template(latex_template).render(**form_data)
+
+    # Define output filenames
+    user_prefix = user_info["email"].split('@')[0]
+    unique_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    output_dir = os.path.join(os.environ.get("HOME", "/home"), "output")
+    os.makedirs(output_dir, exist_ok=True)
+
+    tex_filename = os.path.join(output_dir, f"{user_prefix}_undergradpetition_{unique_id}.tex")
+    pdf_filename = os.path.join(output_dir, f"{user_prefix}_undergradpetition_{unique_id}.pdf")
+
+    # Write .tex file
+    with open(tex_filename, 'w') as f:
+        f.write(latex_content)
+
+    # Compile LaTeX to PDF
+    try:
+        subprocess.run(['pdflatex', '-output-directory', output_dir, tex_filename], check=True)
+    except subprocess.CalledProcessError as e:
+        return f"An error occurred during PDF generation: {e}", 500
+
+    if not os.path.exists(pdf_filename):
+        return f"PDF generation failed: {pdf_filename} not found", 500
+
+    # Store in database
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT user_id FROM users WHERE email=%s", (user_info["email"],))
+    user_row = cursor.fetchone()
+    if not user_row:
+        cursor.close()
+        conn.close()
+        return "User not found in DB", 404
+
+    user_id = user_row["user_id"]
+
+    cursor.execute("""
+        INSERT INTO requests (user_id, form_type, status)
+        VALUES (%s, %s, %s)
+    """, (user_id, 'undergrad_petition', 'submitted'))
+    request_id = cursor.lastrowid
+
+    cursor.execute("""
+        INSERT INTO documents (request_id, document_path)
+        VALUES (%s, %s)
+    """, (request_id, pdf_filename))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return send_file(pdf_filename, as_attachment=True)
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000)

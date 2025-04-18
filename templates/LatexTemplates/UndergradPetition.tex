@@ -1,0 +1,171 @@
+\documentclass{article}
+\usepackage[legalpaper, landscape, margin=0.5in]{geometry}
+\usepackage{hyperref}
+\usepackage{ragged2e}
+\usepackage{blindtext}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{xcolor}
+\usepackage{multicol}
+\usepackage{pgffor}
+\usepackage{pifont,amssymb}
+\usepackage[shortlabels]{enumitem}
+
+\pagenumbering{gobble}
+
+\setlength{\topmargin}{-34mm}
+
+\begin{document}
+\begin{Form}
+
+\begin{multicols}{3}
+\setlength{\hsize}{0.9\hsize}
+\title*{\noindent \textbf{\Huge General Petition}}
+\end{multicols}
+
+\begin{multicols}{2}
+
+\noindent Name\hspace{0.2cm} {{ last_name }}
+\hspace{0.2cm} {{ first_name }} \hspace{0.2cm} {{ middle_name }} \\[1mm]
+\noindent \hspace{1cm} \makebox[4cm][l]{Last,} \hspace{1cm} \makebox[4cm][l]{First,} \hspace{1cm} \makebox[0.2cm][l]{Middle}
+
+\noindent \parbox{0.8\columnwidth}{My UH\# / HA\# {{ psid }}
+Phone Number {{ phone }}} \\[1mm]
+\noindent Mailing Address {{ address }} \\[1mm]
+\noindent City {{ city }} State {{ state }} ZIP {{ zip }} Email {{ email }}
+
+\columnbreak
+
+\parbox{0.8\columnwidth}{
+\vspace{-3mm}
+\fbox{\parbox{0.35\textwidth}{
+\small To be completed by Advisor \\
+\small Current {{ current_plan }} \hspace{1.3cm}\small Current {{ current_career }} \\
+\small Student Program/Plan \hspace{0.7cm}\small Student Academic Career \\
+\small Petition Effective {{ effective_before }} \\
+\parbox{10cm}{\hspace{2.8cm}\small BEFORE first class day Semester/Year} \\
+\small Petition Effective {{ effective_after }} \\
+\parbox{10cm}{\hspace{2.8cm}\small AFTER first class day Semester/Year}
+}}}
+
+\end{multicols}
+
+\vspace{-3mm}
+\noindent\rule{32cm}{0.01pt}
+
+Mark number for purpose of petition (For numbers with an "*" complete EXPLANATION OF REQUEST)
+
+\begin{multicols}{3}
+
+\parbox{.9\columnwidth}{
+1. Update Student's Program Status/action (readmit, term activate, etc.) {{ update }}
+
+2. Admission Status change from {{ status1 }} to {{ status2 }}
+
+3. Add a new career {{ career }}
+
+\hspace{0.5cm}If post baccalaureate, indicate study objective:
+\parbox{9cm}{\hspace{1cm}Second bachelor's degree} \\
+\parbox{9cm}{\hspace{1cm}Requirements for graduate study} \\
+\parbox{9cm}{\hspace{1cm}Teacher certification} \\
+\parbox{9cm}{\hspace{1cm}Personal enrichment}
+
+*4. Student request Program Change from {{ change1 }} to {{ change2 }}
+}
+
+\columnbreak
+\parbox{0.9\columnwidth}{
+*5. Student requests plan(major) change from \\ {{ major1 }} to {{ major2 }}
+
+*6. Degree objective/plan change (B.A,B.S,B.B.A., etc.) \\ {{ plan1 }} to {{ plan2 }}
+
+*7. Requirement Term(year): \\
+UH Catalog/Career {{ catalog }} Program/Plan {{ program }}
+
+*8. Student Requests Additional Plan \\
+{{ plan }} BA/BS/Other {{ other }} \\
+Is new plan your primary or secondary plan? \\
+\scriptsize Indicate any other plan and/or minors you are currently pursuing Under EXPLANATION OF REQUEST.(See number 6 if you are Changing degree objectives.)
+}
+
+\columnbreak
+\parbox{0.8\columnwidth}{
+9. Add second Degree in \\
+{{ degree }} BA/BS/Other {{ other }} \\
+
+*10. Student request removal or change of minor from {{ minor1 }} to {{ minor2 }} \\
+
+*11. Add additional Minor in {{ minor }} \\
+
+*12. Degree requirement exception \\
+*13. Special Problem courses request (Indicate course(s), course description and instructor.) \\
+*14. Course overload (indicate G.P.A., number of hours and courses) \\
+15. Graduate studies leave of absence \\
+*16. Graduate studies reinstatement \\
+*17. Other
+}
+\end{multicols}
+
+\vspace{-3mm}
+\noindent EXPLANATION OF REQUEST: \\
+\vspace{0.5mm}
+{{ explanation1 }} \\
+\vspace{0.5mm}
+{{ explanation2 }} \\
+\vspace{0.5mm}
+{{ explanation3 }}
+
+\noindent Signature of Student 
+\IfFileExists{../../Signatures/signature_{{ username }}.png}{%
+  \noindent
+  \raisebox{-0.1\height}{\includegraphics[width=0.3\textwidth, height=2cm]{../../Signatures/signature_{{ username }}.png}}
+  \hspace{-0.3\textwidth} \hrulefill 
+  \hspace{-0.001\textwidth} Date \today{} \hrulefill
+   \hspace{0.1\textwidth}
+}{%
+\rule{10cm}{0.4pt} Date
+}
+
+\noindent\rule{32cm}{0.01pt}
+
+\hspace{12cm}\textbf{\Large ACADEMIC OFFICE USE ONLY}
+\vspace{-2mm}
+\begin{multicols}{3}
+
+\parbox{0.8\columnwidth}{
+Approved \\
+Disapproved \hspace{0.5cm}Advisor/Instructor \\
+Approved \\
+Disapproved \hspace{0.5cm}Chairperson \\
+Approved \\
+Disapproved \hspace{0.5cm}College Dean \\
+Approved \\
+Disapproved \hspace{0.5cm}Sr. Vice President/Provost 
+}
+
+\columnbreak
+
+\parbox{0.8\columnwidth}{
+\rule{3cm}{0.4pt}  \hspace{0.1cm} {{ printed_name1 }} \hspace{0.1cm} {{ date1 }}
+\rule{3cm}{0.4pt}  \hspace{0.1cm} {{ printed_name2 }} \hspace{0.1cm} {{ date2 }}
+\rule{3cm}{0.4pt}  \hspace{0.1cm} {{ printed_name3 }} \hspace{0.1cm} {{ date3 }}
+\rule{3cm}{0.4pt}  \hspace{0.1cm} {{ printed_name4 }} \hspace{0.1cm} {{ date4 }}
+}
+
+\columnbreak
+\parbox{0.8\columnwidth}{
+\fbox{\parbox{0.75\columnwidth}{
+\textbf{COMMENTS} \\
+\vspace{2mm}
+{{ comments1 }} \\
+{{ comments2 }} \\
+{{ comments3 }} \\
+{{ comments4 }} \\
+{{ comments5 }}
+}}
+}
+
+\end{multicols}
+
+\end{Form}
+\end{document}
