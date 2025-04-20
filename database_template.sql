@@ -97,9 +97,42 @@ CREATE TABLE reports (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     resolved_by INT,  -- Admin who resolved the report
-    resolution_notes TEXT,
     FOREIGN KEY (reporter_id) REFERENCES users(user_id),
     FOREIGN KEY (reported_user_id) REFERENCES users(user_id),
     FOREIGN KEY (category_id) REFERENCES report_categories(category_id),
     FOREIGN KEY (resolved_by) REFERENCES users(user_id)
+);
+
+CREATE TABLE organizational_units (
+    unit_id INT AUTO_INCREMENT PRIMARY KEY,
+    parent_id INT NULL,
+    unit_name VARCHAR(255) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (parent_id) REFERENCES organizational_units(unit_id) ON DELETE CASCADE
+);
+
+CREATE TABLE user_organizational_units ( -- Junction table that connects users to their OU
+    user_ou_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    unit_id INT NOT NULL,
+    role_in_unit VARCHAR(100) NOT NULL, -- e.g., 'student', 'faculty', 'staff', 'chair'
+    is_primary BOOLEAN DEFAULT FALSE, -- Marks user's primary OU
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (unit_id) REFERENCES organizational_units(unit_id) ON DELETE CASCADE,
+    UNIQUE KEY (user_id, unit_id, role_in_unit) -- Prevent duplicate assignments
+);
+
+CREATE TABLE approvers (
+    approver_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    unit_id INT NULL, -- NULL means organizational-level approver 
+    is_primary BOOLEAN DEFAULT FALSE,
+    can_delegate BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (unit_id) REFERENCES organizational_units(unit_id) ON DELETE CASCADE
 );
