@@ -93,7 +93,6 @@ CREATE TABLE reports (
     reported_user_id INT NOT NULL,  -- User being reported
     category_id INT NOT NULL,  -- Type of report (from category)
     description TEXT NOT NULL,  -- Details of the incident
-    evidence_path VARCHAR(512),  -- Optional path to supporting evidence
     status ENUM('submitted', 'under_review', 'resolved', 'dismissed') DEFAULT 'submitted',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
