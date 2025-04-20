@@ -340,6 +340,67 @@ def apply():
     except mysql.connector.Error as err:
         return f"Database Error: {err}", 500
 
+@app.route("/report-user", methods=["POST"])
+def report_user():
+    # Get form data
+    reporter_email = session.get("user", {}).get("email")
+    reported_email = request.form.get("reported_email")
+    category_id = request.form.get("category_id")
+    description = request.form.get("description")
+    
+    # Validate required fields
+    if not all([reporter_email, reported_email, category_id, description]):
+        return "All fields are required!", 400
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Verififcation
+        cursor.execute("SELECT user_id FROM users WHERE email = %s", (reported_email,))
+        reported_user = cursor.fetchone()
+        if not reported_user:
+            return "Reported user not found", 404
+        cursor.execute("SELECT category_id FROM report_categories WHERE category_id = %s", (category_id,))
+        if not cursor.fetchone():
+            return "Invalid report category", 400
+        if reporter_email == reported_email:
+            return "You cannot report yourself", 400
+            
+        # Insert report
+        cursor.execute("""
+            INSERT INTO reports (
+                reporter_id,
+                reported_user_id,
+                category_id,
+                description,
+                status
+            ) VALUES (%s, %s, %s, %s, 'submitted')
+        """, (
+            reporter['user_id'],
+            reported_user['user_id'],
+            category_id,
+            description
+        ))
+        
+        # Get the reporter's name for confirmation message
+        cursor.execute("SELECT name FROM users WHERE email = %s", (reporter_email,))
+        reporter_name = cursor.fetchone()['name']
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        # Send to confirmation page (Currently using thankyou.html)
+        return render_template("thankyou.html", 
+                            reporter_name=reporter_name,
+                            reported_email=reported_email)
+        
+    except mysql.connector.Error as err:
+        return f"Database Error: {err}", 500
+    except Exception as e:
+        return f"Unexpected error: {str(e)}", 500
+
 @app.route('/upload-signature', methods=['POST'])
 def upload_signature():
     if 'signature' not in request.files:
