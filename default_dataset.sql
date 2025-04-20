@@ -24,3 +24,23 @@ INSERT INTO report_categories (category_name, description, severity_level) VALUE
 ('Policy Violation', 'Breach of community guidelines', 'medium'),
 ('Spam', 'Excessive unsolicited messages', 'low'),
 ('Other', 'Other type of report not listed', 'low');
+
+INSERT INTO organizational_units (unit_name, unit_code, description)
+VALUES ('University of Houston', 'UH', 'Main University Organization');
+
+INSERT INTO organizational_units (parent_id, unit_name, unit_code, description)
+VALUES 
+(1, 'College of Engineering', 'ENGR', 'Engineering programs'),
+(1, 'College of Business', 'BUSI', 'Business programs'),
+(1, 'College of Natural Sciences and Mathematics', 'NSM', 'Science and Math programs');
+
+INSERT INTO organizational_units (parent_id, unit_name, unit_code, description)
+VALUES 
+(2, 'Department of Computer Science', 'CS', 'Computer Science programs'),
+(2, 'Department of Electrical Engineering', 'EE', 'Electrical Engineering programs'),
+(2, 'Department of Mechanical Engineering', 'ME', 'Mechanical Engineering programs');
+
+INSERT INTO organizational_units (parent_id, unit_name, unit_code, description)
+VALUES 
+(3, 'Department of Accounting', 'ACCT', 'Accounting programs'),
+(3, 'Department of Marketing', 'MKTG', 'Marketing programs');
