@@ -76,3 +76,31 @@ CREATE TABLE documents (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (request_id) REFERENCES requests(request_id)
 );
+
+-- v.4 --
+
+CREATE TABLE report_categories (
+    category_id INT AUTO_INCREMENT PRIMARY KEY,
+    category_name VARCHAR(256) NOT NULL,
+    description TEXT,
+    severity_level ENUM('low', 'medium', 'high', 'critical') DEFAULT 'medium',
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE reports (
+    report_id INT AUTO_INCREMENT PRIMARY KEY,
+    reporter_id INT NOT NULL,  -- User who is making the report
+    reported_user_id INT NOT NULL,  -- User being reported
+    category_id INT NOT NULL,  -- Type of report (from category)
+    description TEXT NOT NULL,  -- Details of the incident
+    evidence_path VARCHAR(512),  -- Optional path to supporting evidence
+    status ENUM('submitted', 'under_review', 'resolved', 'dismissed') DEFAULT 'submitted',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    resolved_by INT,  -- Admin who resolved the report
+    resolution_notes TEXT,
+    FOREIGN KEY (reporter_id) REFERENCES users(user_id),
+    FOREIGN KEY (reported_user_id) REFERENCES users(user_id),
+    FOREIGN KEY (category_id) REFERENCES report_categories(category_id),
+    FOREIGN KEY (resolved_by) REFERENCES users(user_id)
+);
