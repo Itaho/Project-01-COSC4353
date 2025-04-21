@@ -44,3 +44,16 @@ INSERT INTO organizational_units (parent_id, unit_name, unit_code, description)
 VALUES 
 (3, 'Department of Accounting', 'ACCT', 'Accounting programs'),
 (3, 'Department of Marketing', 'MKTG', 'Marketing programs');
+
+-- For v0.4
+INSERT INTO permissions (permission_name) VALUES
+    ('manage_workflows'),
+    ('manage_approvers'),
+    ('view_all_reports'),
+    ('resolve_reports');
+
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.role_id, p.permission_id 
+FROM roles r, permissions p
+WHERE r.role_name = 'admin' 
+AND p.permission_name IN ('manage_workflows', 'manage_approvers', 'view_all_reports', 'resolve_reports');
