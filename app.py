@@ -446,23 +446,30 @@ def report_user():
         reporter = cursor.fetchone()
         if not reporter:
             return "Reporter not found", 404
-        
+
+        # Get Cougar ID
+        cursor.execute("SELECT cougar_id FROM users WHERE email = %s", (reporter_email,))
+        cougar_id_row = cursor.fetchone()
+        cougar_id = cougar_id_row["cougar_id"] if cougar_id_row else None
+
         # Insert report
         cursor.execute("""
             INSERT INTO reports (
                 reporter_id,
+                reporter_cougar_id,
                 reported_user_id,
                 category_id,
                 description,
                 status
-            ) VALUES (%s, %s, %s, %s, 'submitted')
+            ) VALUES (%s, %s, %s, %s, %s, 'submitted')
         """, (
             reporter['user_id'],
+            cougar_id,
             reported_user['user_id'],
             category_id,
             description
         ))
-        
+
         # Get the reporter's name for confirmation message
         cursor.execute("SELECT name FROM users WHERE email = %s", (reporter_email,))
         reporter_name = cursor.fetchone()['name']
@@ -1079,10 +1086,11 @@ def get_user_role():
 @app.route("/IdLookup", methods=["GET"])
 def id_lookup_page():
     return render_template("IdLookup.html", searched=False)
+
 @app.route("/lookup-reports", methods=["POST"])
 def lookup_reports():
-    user_id = request.form.get("user_id")
-    if not user_id:
+    cougar_id = request.form.get("cougar_id")
+    if not cougar_id:
         return render_template("IdLookup.html", reports=[], searched=True)
 
     try:
@@ -1101,9 +1109,9 @@ def lookup_reports():
             JOIN users reporter ON r.reporter_id = reporter.user_id
             JOIN users reported ON r.reported_user_id = reported.user_id
             JOIN report_categories rc ON rc.category_id = r.category_id
-            WHERE r.reporter_id = %s
+            WHERE r.reporter_cougar_id = %s
             ORDER BY r.created_at DESC
-        """, (user_id,))
+        """, (cougar_id,))
         
         reports = cursor.fetchall()
         cursor.close()
@@ -1112,7 +1120,6 @@ def lookup_reports():
         return render_template("IdLookup.html", reports=reports, searched=True)
     except Exception as e:
         return f"Error fetching reports: {str(e)}", 500
-
 
 # --- for local testing ---
 @app.route("/dev-login")
