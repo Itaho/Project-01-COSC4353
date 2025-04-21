@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moderator Panel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #c00;
+        }
+        .report-summary {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .report-details {
+            display: none;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin: 10px 0;
+        }
+        textarea, select, input[type="submit"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+        }
+    </style>
+    <script>
+        function toggleDetails(id) {
+            const details = document.getElementById('details-' + id);
+            details.style.display = details.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+</head>
+<body>
+    <h1>Moderator Panel</h1>
+    {% for report in reports %}
+    <div class="report-summary" onclick="toggleDetails({{ report.report_id }})">
+        <strong>Report #{{ report.report_id }}</strong> - {{ report.category_name }} - Status: {{ report.status }}
+    </div>
+
+    <div class="report-details" id="details-{{ report.report_id }}">
+        <p><strong>Reporter Cougar ID:</strong> {{ report.reporter_cougar_id }}</p>
+        <p><strong>Reported User ID:</strong> {{ report.reported_user_id }}</p>
+        <p><strong>Category:</strong> {{ report.category_name }}</p>
+        <p><strong>Description:</strong> {{ report.description }}</p>
+
+        <form action="/moderator/handle_report" method="post">
+            <input type="hidden" name="report_id" value="{{ report.report_id }}">
+
+            <div class="form-group">
+                <label for="action">Action:</label>
+                <select name="action" required>
+                    <option value="">-- Select an Action --</option>
+                    <option value="dismissed">Dismiss Report</option>
+                    <option value="resolved">Approve Report</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="reason_or_punishment">Reason (if dismissed) or Recommended Punishment (if approved):</label>
+                <textarea name="reason_or_punishment" rows="3" required></textarea>
+            </div>
+
+            <input type="submit" value="Submit Decision">
+        </form>
+    </div>
+    {% endfor %}
+</body>
+</html>

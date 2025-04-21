@@ -1120,6 +1120,43 @@ def lookup_reports():
         return render_template("IdLookup.html", reports=reports, searched=True)
     except Exception as e:
         return f"Error fetching reports: {str(e)}", 500
+    
+@app.route("/moderator/handle_report", methods=["POST"])
+def handle_report():
+    report_id = request.form.get("report_id")
+    action = request.form.get("action")  # 'resolved' or 'dismissed'
+    reason_or_punishment = request.form.get("reason_or_punishment")
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        update_query = """
+            UPDATE reports
+            SET status = %s,
+                moderator_comments = %s,
+                resolved_by = %s,
+                updated_at = NOW()
+            WHERE report_id = %s
+        """
+
+        cursor.execute(update_query, (
+            action,
+            reason_or_punishment,
+            session["user_id"],  # Assuming the moderator is logged in
+            report_id
+        ))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        flash("Report updated successfully.")
+        return redirect("/ModPanel")  # Adjust route if needed
+
+    except Exception as e:
+        return f"Error handling report: {str(e)}", 500
+
 
 # --- for local testing ---
 @app.route("/dev-login")
