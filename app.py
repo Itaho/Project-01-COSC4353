@@ -352,24 +352,26 @@ def update_user():
 
     # Map access level strings to integer role IDs
     role_map = {
-        "basic": 2,        # matches 'basicuser' role_id
-        "administrator": 1  # matches 'admin' role_id
+        "basic": 2,          # matches 'basicuser'
+        "moderator": 3,      # new role
+        "administrator": 1   # matches 'admin'
     }
-    
+
     try:
         conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)  # Changed to dictionary cursor
-        
+        cursor = conn.cursor(dictionary=True)
+
         # Update the user's role
         update_query = "UPDATE users SET role_id = %s WHERE email = %s"
         cursor.execute(update_query, (role_map[new_access_level], username))
         conn.commit()
-        
+
         # Re-fetch all users with role information
         cursor.execute("""
             SELECT u.email AS username, 
                    CASE 
                        WHEN r.role_name = 'admin' THEN 'administrator'
+                       WHEN r.role_name = 'moderator' THEN 'moderator'
                        ELSE 'basic'
                    END AS access_level
             FROM users u
@@ -379,10 +381,10 @@ def update_user():
         cursor.close()
         conn.close()
 
-        # Redirect back to admin panel with updated data
         return redirect(url_for('admin_panel'))
     except Exception as e:
         return f"Error updating user: {str(e)}", 500
+
 
 # Processes the form submission from the landing page
 @app.route("/apply", methods=["POST"])
@@ -978,6 +980,34 @@ def submit_undergrad_petition():
     conn.close()
 
     return send_file(pdf_filename, as_attachment=True)
+
+@app.route("/get-user-role")
+def get_user_role():
+    user_info = session.get("user")
+    if not user_info:
+        return {"role": "none"}
+    
+    email = user_info.get("email")
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT r.role_name 
+            FROM users u 
+            JOIN roles r ON u.role_id = r.role_id 
+            WHERE u.email = %s
+        """, (email,))
+        result = cursor.fetchone()
+        cursor.close()
+        conn.close()
+
+        if not result:
+            return {"role": "none"}
+
+        return {"role": result["role_name"]}
+    except Exception:
+        return {"role": "none"}
+
 
 # --- for local testing ---
 @app.route("/dev-login")

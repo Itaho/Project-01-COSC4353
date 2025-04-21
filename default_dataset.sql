@@ -1,7 +1,8 @@
 -- Add default roles
 INSERT INTO roles (role_name, description) VALUES
     ('admin', 'Full access to manage users and roles'),
-    ('basicuser', 'Default role with limited access');
+    ('basicuser', 'Default role with limited access'),
+    ('moderator', 'Intermediate access to manage reports or moderate content');
 
 -- Add permissions (example)
 INSERT INTO permissions (permission_name) VALUES
