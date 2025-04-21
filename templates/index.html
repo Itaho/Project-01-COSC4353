@@ -105,7 +105,25 @@
   <!-- Top-right buttons -->
   <div class="nav-buttons">
     <a href="/report" class="admin-button">Report a user</a>
-    <a href="adminpanel.html" class="admin-button">Administrator Panel</a>
+    <a href="#" class="admin-button" onclick="redirectToReports()">Reports</a>
+<script>
+  function redirectToReports() {
+    fetch('/get-user-role')
+      .then(response => response.json())
+      .then(data => {
+        if (data.role === 'admin') {
+          window.location.href = 'adminpanel.html';
+        } else if (data.role === 'moderator') {
+          window.location.href = 'ModPanel.html';
+        } else {
+          window.location.href = 'IdLookup.html';
+      }})
+      .catch(err => {
+        console.error('Error determining role:', err);
+        alert('Could not determine user role.');
+      });
+  }
+</script>
     <a href="{{ url_for('profile') }}" class="admin-button">My Profile</a>
   </div>
 
