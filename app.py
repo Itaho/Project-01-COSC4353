@@ -195,16 +195,52 @@ def update_report():
     if "user" not in session:
         return "Not logged in", 403
 
-    admin_email = session["user"]["email"]
+    admin_email = session["user"].get("email")
 
-    action      = request.form.get("action")        # resolve or dismiss
-    report_id   = request.form.get("report_id")
+    action    = request.form.get("action")      # 'resolved' or 'dismissed'
+    report_id = request.form.get("report_id")
 
     if action not in ("resolved", "dismissed"):
         return "Invalid action", 400
+    if not report_id:
+        return "No report_id provided", 400
 
-    conn   = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    try:
+        conn   = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # checks if user is admin
+        cursor.execute("""
+            SELECT r.role_name
+            FROM   users u
+            JOIN   roles r ON u.role_id = r.role_id
+            WHERE  u.email = %s
+        """, (admin_email,))
+        role_row = cursor.fetchone()
+        if not role_row or role_row["role_name"] != "admin":
+            return "You must be admin to update reports.", 403
+
+        # update report
+        cursor.execute("""
+            UPDATE reports
+            SET    status      = %s,
+                   resolved_by = (SELECT user_id FROM users WHERE email = %s)
+            WHERE  report_id   = %s
+        """, (action, admin_email, report_id))
+
+        conn.commit()
+
+    except Exception as e:
+        app.logger.exception(e)
+        return "Database error", 500
+
+    finally:
+        try:
+            cursor.close(); conn.close()
+        except Exception:
+            pass
+
+    return redirect(url_for("admin_panel"))
 
 @app.route("/toggle-status", methods=["POST"])
 def toggle_status():
@@ -943,6 +979,11 @@ def submit_undergrad_petition():
 
     return send_file(pdf_filename, as_attachment=True)
 
+# --- for local testing ---
+@app.route("/dev-login")
+def dev_login():
+    session["user"] = {"email": "admin@example.com", "name": "Local Admin"}
+    return "Dev user logged in! Go back to /adminpanel.html", 200
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000)
