@@ -136,3 +136,55 @@ CREATE TABLE approvers (
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (unit_id) REFERENCES organizational_units(unit_id) ON DELETE CASCADE
 );
+
+CREATE TABLE delegates (
+    delegation_id INT AUTO_INCREMENT PRIMARY KEY,
+    parent_approver_id INT NOT NULL, -- "Allow approvers to “delegate” the approval to another user"
+    delegate_user_id INT NOT NULL,
+    unit_id INT NOT NULL, -- Scope of delegation, NULL means organizational-level approver 
+    start_date TIMESTAMP NOT NULL,
+    end_date TIMESTAMP NOT NULL,
+    status ENUM('active', 'expired', 'revoked') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (original_approver_id) REFERENCES approvers(approver_id) ON DELETE CASCADE,
+    FOREIGN KEY (delegate_user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (unit_id) REFERENCES organizational_units(unit_id) ON DELETE CASCADE
+);
+
+CREATE TABLE workflows (
+    workflow_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    request_type VARCHAR(50) NOT NULL,  -- e.g., 'petition', 'withdrawal'
+    unit_id INT NULL,  -- NULL for organization-wide workflows
+    is_active BOOLEAN DEFAULT TRUE,
+    version DECIMAL DEFAULT 1.00, 
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (unit_id) REFERENCES organizational_units(unit_id) ON DELETE CASCADE
+);it 
+
+CREATE TABLE workflow_steps (
+    step_id INT AUTO_INCREMENT PRIMARY KEY,
+    workflow_id INT NOT NULL,
+    step_order INT NOT NULL,  -- Determines sequence
+
+    -- I did it this way so that you can choose whether to assign to an OU, a group like "admins", or a specific user. 
+    -- Only one of these three is necessary, not all 3.
+    approval_type ENUM('unit', 'role', 'user') NOT NULL,
+    unit_id INT NULL,  -- Required if approval_type='unit'
+    role_id INT NULL,  -- Required if approval_type='role'
+    user_id INT NULL,  -- Required if approval_type='user'
+    
+    is_required BOOLEAN DEFAULT TRUE,
+    min_approvals INT DEFAULT 1,  -- For multi-approver steps
+    FOREIGN KEY (workflow_id) REFERENCES workflow_definitions(workflow_id) ON DELETE CASCADE,
+    FOREIGN KEY (unit_id) REFERENCES organizational_units(unit_id) ON DELETE SET NULL,
+    FOREIGN KEY (role_id) REFERENCES roles(role_id) ON DELETE SET NULL,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL,
+    CHECK (
+        (approval_type = 'unit' AND unit_id IS NOT NULL) OR
+        (approval_type = 'role' AND role_id IS NOT NULL) OR
+        (approval_type = 'user' AND user_id IS NOT NULL)
+    )
+);
