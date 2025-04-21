@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Report Lookup</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #fff;
+      color: #c00;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding-top: 60px;
+    }
+
+    .admin-button {
+      background-color: #c00;
+      color: #fff;
+      padding: 10px 20px;
+      text-decoration: none;
+      border-radius: 5px;
+      font-family: Arial, sans-serif;
+      margin: 10px;
+      display: inline-block;
+    }
+
+    .admin-button:hover {
+      opacity: 0.9;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 700px;
+      border: 2px solid #c00;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 1em;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #c00;
+      border-radius: 5px;
+      font-size: 1em;
+      margin-bottom: 1em;
+    }
+
+    button {
+      background-color: #c00;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-bottom: 1em;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .report {
+      border: 1px solid #c00;
+      border-radius: 5px;
+      padding: 10px;
+      margin-top: 15px;
+      text-align: left;
+    }
+
+    .more-info {
+      display: none;
+      margin-top: 10px;
+      color: #333;
+    }
+
+    .show {
+      display: block;
+    }
+
+    .status {
+      font-weight: bold;
+      color: #c00;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <a href="/" class="admin-button">Home</a>
+
+    <h1>Lookup Reports by User ID</h1>
+    <form method="POST" action="/lookup-reports">
+      <input type="text" name="user_id" placeholder="Enter User ID" required>
+      <button type="submit">Search</button>
+    </form>
+
+    {% if reports %}
+      <h2>Reports Found:</h2>
+      {% for report in reports %}
+        <div class="report">
+          <p class="status">Status: {{ report.status }}</p>
+          <button onclick="toggleInfo('info{{ loop.index }}')">More Info</button>
+          <div class="more-info" id="info{{ loop.index }}">
+            <p><strong>Report ID:</strong> {{ report.report_id }}</p>
+            <p><strong>Reporter Email:</strong> {{ report.reporter_email }}</p>
+            <p><strong>Reported Email:</strong> {{ report.reported_email }}</p>
+            <p><strong>Category:</strong> {{ report.category_name }}</p>
+            <p><strong>Description:</strong> {{ report.description }}</p>
+            <p><strong>Created At:</strong> {{ report.created_at }}</p>
+          </div>
+        </div>
+      {% endfor %}
+    {% elif searched %}
+      <p>No reports found for this user ID.</p>
+    {% endif %}
+  </div>
+
+  <script>
+    function toggleInfo(id) {
+      const el = document.getElementById(id);
+      el.classList.toggle("show");
+    }
+  </script>
+
+</body>
+</html>

@@ -732,6 +732,13 @@ def approve_request():
     conn.close()
 
     return redirect(url_for("admin_panel"))
+@app.route("/InterInstitutional")
+def inter_institutional():
+    return render_template("InterInstitutional.html")
+
+@app.route("/UndergradForm")
+def undergrad_form():
+    return render_template("UndergradForm.html")
 
 @app.route("/withdraw", methods=["GET"])
 def withdraw():
@@ -1007,6 +1014,43 @@ def get_user_role():
         return {"role": result["role_name"]}
     except Exception:
         return {"role": "none"}
+
+@app.route("/IdLookup", methods=["GET"])
+def id_lookup_page():
+    return render_template("IdLookup.html", searched=False)
+@app.route("/lookup-reports", methods=["POST"])
+def lookup_reports():
+    user_id = request.form.get("user_id")
+    if not user_id:
+        return render_template("IdLookup.html", reports=[], searched=True)
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT r.report_id,
+                   reporter.email  AS reporter_email,
+                   reported.email  AS reported_email,
+                   rc.category_name,
+                   r.description,
+                   r.status,
+                   r.created_at
+            FROM reports r
+            JOIN users reporter ON r.reporter_id = reporter.user_id
+            JOIN users reported ON r.reported_user_id = reported.user_id
+            JOIN report_categories rc ON rc.category_id = r.category_id
+            WHERE r.reporter_id = %s
+            ORDER BY r.created_at DESC
+        """, (user_id,))
+        
+        reports = cursor.fetchall()
+        cursor.close()
+        conn.close()
+
+        return render_template("IdLookup.html", reports=reports, searched=True)
+    except Exception as e:
+        return f"Error fetching reports: {str(e)}", 500
 
 
 # --- for local testing ---
