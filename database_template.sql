@@ -92,6 +92,7 @@ CREATE TABLE reports (
     report_id INT AUTO_INCREMENT PRIMARY KEY,
     reporter_id INT NOT NULL,  -- User who is making the report
     reported_user_id INT NOT NULL,  -- User being reported
+    reporter_cougar_id VARCHAR(20), -- cougarid
     category_id INT NOT NULL,  -- Type of report (from category)
     description TEXT NOT NULL,  -- Details of the incident
     status ENUM('submitted', 'under_review', 'resolved', 'dismissed') DEFAULT 'submitted',
