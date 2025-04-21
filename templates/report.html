@@ -1,33 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Report a User</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #fff;
+      color: #c00;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction:column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 500px;
+      border: 2px solid #c00;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 0.5em;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1em;
+      text-align: left;
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    input[type="email"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #c00;
+      border-radius: 5px;
+      font-size: 1em;
+    }
+
+    .back-button {
+      position: absolute;
+      top: 20px;  
+      left: 20px;
+
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #cc0000;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      background-color: #c00;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+      border-radius: 5px;
+      align-self: center;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+  </style>
 </head>
 <body>
-  <h1>Report a User</h1>
-  <form action="{{ url_for('report_user') }}" method="POST">
-    <label>
-      User’s email to report:
-      <input type="email" name="reported_email" required>
-    </label><br><br>
+  <a href="/" class="back-button">Back to Home</a>
+  
+  <div class="container">
+    <h1>Report a User</h1>
+    <form action="{{ url_for('report_user') }}" method="POST">
+      <label for="reported_email">User’s email to report:</label>
+      <input type="email" name="reported_email" id="reported_email" required />
 
-    <label>
-      Category:
-      <select name="category_id" required>
+      <label for="category_id">Category:</label>
+      <select name="category_id" id="category_id" required>
         {% for c in categories %}
           <option value="{{ c.category_id }}">{{ c.category_name }}</option>
         {% endfor %}
       </select>
-    </label><br><br>
 
-    <label>
-      Description:<br>
-      <textarea name="description" rows="5" cols="60" required></textarea>
-    </label><br><br>
+      <label for="description">Description:</label>
+      <textarea name="description" id="description" rows="5" required></textarea>
 
-    <button type="submit">Submit Report</button>
-  </form>
+      <button type="submit">Submit Report</button>
+    </form>
+  </div>
 </body>
 </html>
