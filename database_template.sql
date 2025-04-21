@@ -184,10 +184,5 @@ CREATE TABLE workflow_steps (
     FOREIGN KEY (workflow_id) REFERENCES workflow_definitions(workflow_id) ON DELETE CASCADE,
     FOREIGN KEY (unit_id) REFERENCES organizational_units(unit_id) ON DELETE SET NULL,
     FOREIGN KEY (role_id) REFERENCES roles(role_id) ON DELETE SET NULL,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL,
-    CHECK (
-        (approval_type = 'unit' AND unit_id IS NOT NULL) OR
-        (approval_type = 'role' AND role_id IS NOT NULL) OR
-        (approval_type = 'user' AND user_id IS NOT NULL)
-    )
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL
 );
