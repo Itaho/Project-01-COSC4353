@@ -101,6 +101,13 @@ def add_user_to_db():
                         (email, name)
                     )
                     conn.commit()
+                else:
+                    # checks for current cougar id
+                    cursor.execute("SELECT cougar_id FROM users WHERE email = %s", (email,))
+                    result = cursor.fetchone()
+                    if result and not result[0] and request.endpoint not in ("set_cougar_id", "static"):
+                        return redirect(url_for("set_cougar_id"))
+
             except mysql.connector.Error as err:
                 app.logger.error(f"Database error: {err}")
                 conn.rollback()
@@ -565,6 +572,60 @@ def profile():
     except Exception as e:
         return f"Error fetching profile: {str(e)}", 500
     
+@app.route("/set-cougar-id", methods=["GET", "POST"])
+def set_cougar_id():
+    if "user" not in session:
+        return redirect(url_for("home"))
+
+    email = session["user"]["email"]
+
+    if request.method == "POST":
+        id1 = request.form.get("cougar_id")
+        id2 = request.form.get("confirm_id")
+
+        if id1 != id2:
+            return render_template("set_cougar_id.html", error="IDs don't match.")
+
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("UPDATE users SET cougar_id = %s WHERE email = %s", (id1, email))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return redirect(url_for("verify_cougar_id"))
+        except Exception as e:
+            return f"Error saving Cougar ID: {str(e)}", 500
+
+    return render_template("set_cougar_id.html")
+
+@app.route("/verify-cougar-id", methods=["GET", "POST"])
+def verify_cougar_id():
+    if "user" not in session:
+        return redirect(url_for("home"))
+
+    email = session["user"]["email"]
+
+    if request.method == "POST":
+        entered_id = request.form.get("cougar_id")
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT cougar_id FROM users WHERE email = %s", (email,))
+            result = cursor.fetchone()
+            cursor.close()
+            conn.close()
+
+            if result and result["cougar_id"] == entered_id:
+                session["cougar_verified"] = True
+                return redirect(url_for("home"))  # or dashboard, etc.
+            else:
+                return render_template("verify_cougar_id.html", error="Invalid Cougar ID")
+        except Exception as e:
+            return f"Error verifying Cougar ID: {str(e)}", 500
+
+    return render_template("verify_cougar_id.html")
+   
 petitionTemplate = r"""
 \documentclass{{article}}
 \begin{{document}}
