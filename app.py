@@ -167,14 +167,44 @@ def admin_panel():
             ORDER BY req.submitted_at DESC
         """)
         petitions = cursor.fetchall()
+        # gets report info
+        cursor.execute("""
+            SELECT r.report_id,
+                   reporter.email  AS reporter_email,
+                   reported.email  AS reported_email,
+                   rc.category_name,
+                   r.description,
+                   r.status,
+                   r.created_at
+            FROM   reports           r
+            JOIN   users   reporter  ON reporter.user_id = r.reporter_id
+            JOIN   users   reported  ON reported.user_id = r.reported_user_id
+            JOIN   report_categories rc ON rc.category_id = r.category_id
+            ORDER  BY r.created_at DESC
+        """)
+        reports = cursor.fetchall()
         
         cursor.close()
         conn.close()
-        return render_template("adminpanel.html", users=users, petitions=petitions)
+        return render_template("adminpanel.html", users=users, petitions=petitions, **{"reports": reports})
     except Exception as e:
-        # This will display the error message to help you debug
         return f"Error fetching users: {str(e)}", 500
-    return render_template("adminpanel.html", users=users)
+    
+@app.route("/update-report", methods=["POST"])
+def update_report():
+    if "user" not in session:
+        return "Not logged in", 403
+
+    admin_email = session["user"]["email"]
+
+    action      = request.form.get("action")        # resolve or dismiss
+    report_id   = request.form.get("report_id")
+
+    if action not in ("resolved", "dismissed"):
+        return "Invalid action", 400
+
+    conn   = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
 
 @app.route("/toggle-status", methods=["POST"])
 def toggle_status():
@@ -366,7 +396,12 @@ def report_user():
             return "Invalid report category", 400
         if reporter_email == reported_email:
             return "You cannot report yourself", 400
-            
+               
+        cursor.execute("SELECT user_id FROM users WHERE email = %s", (reporter_email,))
+        reporter = cursor.fetchone()
+        if not reporter:
+            return "Reporter not found", 404
+        
         # Insert report
         cursor.execute("""
             INSERT INTO reports (
@@ -400,6 +435,15 @@ def report_user():
         return f"Database Error: {err}", 500
     except Exception as e:
         return f"Unexpected error: {str(e)}", 500
+    
+@app.route("/report")
+def report_form():
+    conn   = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT category_id, category_name FROM report_categories WHERE is_active")
+    categories = cursor.fetchall()
+    cursor.close(); conn.close()
+    return render_template("report.html", categories=categories)
 
 @app.route('/upload-signature', methods=['POST'])
 def upload_signature():

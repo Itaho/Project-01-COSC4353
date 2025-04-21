@@ -159,6 +159,54 @@
     </div>
     
     <div class="panel-section">
+      <h2>User Reports</h2>
+    
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Reporter</th>
+            <th>Reported User</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Submitted</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for rep in reports %}
+          <tr>
+            <td>{{ rep.report_id }}</td>
+            <td>{{ rep.reporter_email }}</td>
+            <td>{{ rep.reported_email }}</td>
+            <td>{{ rep.category_name }}</td>
+            <td style="max-width:250px; word-break:break-word;">{{ rep.description }}</td>
+            <td>{{ rep.created_at }}</td>
+            <td>{{ rep.status }}</td>
+            <td class="actions-column">
+              {% if rep.status == 'submitted' or rep.status == 'under_review' %}
+              <form action="{{ url_for('update_report') }}" method="POST">
+                <input type="hidden" name="report_id" value="{{ rep.report_id }}">
+                <input type="hidden" name="action" value="resolved">
+                <button type="submit">Resolve</button>
+              </form>
+              <form action="{{ url_for('update_report') }}" method="POST">
+                <input type="hidden" name="report_id" value="{{ rep.report_id }}">
+                <input type="hidden" name="action" value="dismissed">
+                <button type="submit">Dismiss</button>
+              </form>
+              {% else %}
+                ✔
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel-section">
       <h2>Enable or Disable a User</h2>
       
       <form action="{{ url_for('toggle_status') }}" method="POST">
