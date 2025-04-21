@@ -32,7 +32,8 @@ CREATE TABLE users (
     name VARCHAR(256) NOT NULL,
     email VARCHAR(256) UNIQUE NOT NULL,
     role_id INT DEFAULT 2, -- Default 'basicuser' (assume role_id=2)
-    signature_path VARCHAR(512), -- New column for storing signature image path
+    signature_path VARCHAR(512), -- Signature image path
+    cougar_id VARCHAR(20),       -- Cougar ID (user-provided after login)
     status ENUM('active', 'inactive') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
