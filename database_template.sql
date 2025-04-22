@@ -149,7 +149,7 @@ CREATE TABLE delegates (
     end_date TIMESTAMP NOT NULL,
     status ENUM('active', 'expired', 'revoked') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (original_approver_id) REFERENCES approvers(approver_id) ON DELETE CASCADE,
+    FOREIGN KEY (parent_approver_id) REFERENCES approvers(approver_id) ON DELETE CASCADE,
     FOREIGN KEY (delegate_user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (unit_id) REFERENCES organizational_units(unit_id) ON DELETE CASCADE
 );
