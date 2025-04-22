@@ -47,10 +47,14 @@
     button:hover {
       background-color: #aa0000;
     }
+    .table-responsive {
+      overflow-x: auto;
+      margin-top: 20px;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
+      min-width: 800px;
     }
     th, td {
       padding: 10px;
@@ -221,6 +225,8 @@
       </table>
     </div>
     
+
+    
     
 
     <div class="panel-section">
@@ -276,37 +282,39 @@
     <div class="panel-section">
       <h2>Petitions</h2>
       
-      <table>
-        <thead>
-          <tr>
-            <th>Request ID</th>
-            <th>User Email</th>
-            <th>Submitted At</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for p in petitions %}
-          <tr>
-            <td>{{ p.request_id }}</td>
-            <td>{{ p.email }}</td>
-            <td>{{ p.submitted_at }}</td>
-            <td>{{ p.req_status }}</td>
-            <td class="actions-column">
-              {% if p.document_path %}
-                <a href="{{ url_for('download_pdf', request_id=p.request_id) }}">View PDF</a>
-              {% endif %}
-              
-              <form action="{{ url_for('approve_request') }}" method="POST">
-                <input type="hidden" name="request_id" value="{{ p.request_id }}">
-                <button type="submit">Approve</button>
-              </form>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Request ID</th>
+              <th>User Email</th>
+              <th>Submitted At</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in petitions %}
+            <tr>
+              <td>{{ p.request_id }}</td>
+              <td>{{ p.email }}</td>
+              <td>{{ p.submitted_at }}</td>
+              <td>{{ p.req_status }}</td>
+              <td class="actions-column">
+                {% if p.document_path %}
+                  <a href="{{ url_for('download_pdf', request_id=p.request_id) }}">View PDF</a>
+                {% endif %}
+                
+                <form action="{{ url_for('approve_request') }}" method="POST">
+                  <input type="hidden" name="request_id" value="{{ p.request_id }}">
+                  <button type="submit">Approve</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
     
   </div>
