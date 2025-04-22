@@ -204,6 +204,45 @@ def admin_panel():
     except Exception as e:
         return f"Error fetching users: {str(e)}", 500
 
+@app.before_request
+def reset_and_check_cougar_id():
+    # Always clear Cougar ID verification
+    session.pop("cougar_verified", None)
+
+    parse_easy_auth_headers()
+
+    user_info = session.get("user")
+    if user_info:
+        email = user_info.get("email")
+        name = user_info.get("name")
+
+        if email and name:
+            try:
+                conn = get_db_connection()
+                cursor = conn.cursor()
+
+                cursor.execute("SELECT email FROM users WHERE email = %s", (email,))
+                existing_user = cursor.fetchone()
+
+                if not existing_user:
+                    cursor.execute(
+                        "INSERT INTO users (email, name, signature_path) VALUES (%s, %s, NULL)", 
+                        (email, name)
+                    )
+                    conn.commit()
+
+                cursor.execute("SELECT cougar_id FROM users WHERE email = %s", (email,))
+                result = cursor.fetchone()
+                if result and not result[0] and request.endpoint not in ("set_cougar_id", "static"):
+                    return redirect(url_for("set_cougar_id"))
+
+            except mysql.connector.Error as err:
+                app.logger.error(f"Database error: {err}")
+                conn.rollback()
+            finally:
+                cursor.close()
+                conn.close()
+
 @app.route("/update-report", methods=["POST"])
 def update_report():
     if "user" not in session:
