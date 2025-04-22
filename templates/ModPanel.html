@@ -61,6 +61,23 @@
       margin-bottom: 10px;
       color: #333;
     }
+    /* Styling for the home button */
+    .home-button {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #cc0000;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      transition: background-color 0.2s;
+    }
+    .home-button:hover {
+      background-color: #aa0000;
+      color: white;
+      text-decoration: none;
+    }
   </style>
   <script>
     function toggleDetails(id) {
@@ -70,6 +87,9 @@
   </script>
 </head>
 <body>
+
+  <!-- Home button at the top of the page -->
+  <a href="/" class="home-button">Home</a>
 
   <h1>Moderator Panel</h1>
 
