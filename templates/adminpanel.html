@@ -188,25 +188,18 @@
             <td>{{ rep.created_at }}</td>
             <td>{{ rep.status }}</td>
             <td>{{ rep.moderator_comments or '—' }}</td>
-            <td>
-              <form action="{{ url_for('update_report') }}" method="POST">
+            <td colspan="2">
+              <form action="{{ url_for('update_report') }}" method="POST" style="display: flex; gap: 10px; align-items: center;">
                 <input type="hidden" name="report_id" value="{{ rep.report_id }}">
-                <textarea name="admin_comments" rows="2" style="width:100%;" placeholder="Add admin comment..." required>{{ rep.admin_comments or '' }}</textarea>
-            </td>
-            <td class="actions-column">
-              {% if rep.status in ['submitted', 'under_review'] %}
-                <input type="hidden" name="action" value="resolved">
-                <button type="submit">Resolve</button>
+                <textarea name="admin_comments" rows="2" placeholder="Add admin comment..." required style="width: 100%; max-width: 300px;">{{ rep.admin_comments or '' }}</textarea>
+            
+                {% if rep.status in ['submitted', 'under_review'] %}
+                  <input type="hidden" name="action" value="resolved">
+                  <button type="submit">Resolve</button>
+                {% else %}
+                  ✔
+                {% endif %}
               </form>
-              <form action="{{ url_for('update_report') }}" method="POST" style="margin-top:5px;">
-                <input type="hidden" name="report_id" value="{{ rep.report_id }}">
-                <input type="hidden" name="action" value="dismissed">
-                <textarea name="admin_comments" rows="2" style="display:none;">{{ rep.admin_comments or '' }}</textarea>
-                <button type="submit">Dismiss</button>
-              </form>
-              {% else %}
-                ✔
-              {% endif %}
             </td>
           </tr>
           {% endfor %}
