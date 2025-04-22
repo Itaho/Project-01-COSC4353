@@ -110,6 +110,7 @@ CREATE TABLE organizational_units (
     unit_id INT AUTO_INCREMENT PRIMARY KEY,
     parent_id INT NULL,
     unit_name VARCHAR(255) NOT NULL,
+    unit_code VARCHAR(255) NOT NULL,
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
