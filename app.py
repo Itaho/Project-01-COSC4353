@@ -1174,6 +1174,9 @@ def handle_report():
     except Exception as e:
         return f"Error handling report: {str(e)}", 500
 
+@app.route("/ModPanel.html", methods=["GET"])
+def mod_panel():
+    return render_template("ModPanel.html")
 
 # --- for local testing ---
 @app.route("/dev-login")
