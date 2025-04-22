@@ -97,6 +97,7 @@ CREATE TABLE reports (
     description TEXT NOT NULL,  -- Details of the incident
     status ENUM('submitted', 'under_review', 'approved_by_moderator', 'dismissed_by_moderator', 'resolved', 'dismissed') DEFAULT 'submitted',
     moderator_comments TEXT, 
+    admin_comments TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     resolved_by INT,  -- Admin who resolved the report
