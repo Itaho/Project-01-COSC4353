@@ -210,9 +210,9 @@ def update_report():
         return "Not logged in", 403
 
     admin_email = session["user"].get("email")
-
-    action    = request.form.get("action")      # 'resolved' or 'dismissed'
+    action = request.form.get("action")  # 'resolved' or 'dismissed'
     report_id = request.form.get("report_id")
+    admin_comments = request.form.get("admin_comments")
 
     if action not in ("resolved", "dismissed"):
         return "Invalid action", 400
@@ -220,29 +220,36 @@ def update_report():
         return "No report_id provided", 400
 
     try:
-        conn   = get_db_connection()
+        conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
 
-        # checks if user is admin
+        # Check if admin
         cursor.execute("""
             SELECT r.role_name
-            FROM   users u
-            JOIN   roles r ON u.role_id = r.role_id
-            WHERE  u.email = %s
+            FROM users u
+            JOIN roles r ON u.role_id = r.role_id
+            WHERE u.email = %s
         """, (admin_email,))
         role_row = cursor.fetchone()
         if not role_row or role_row["role_name"] != "admin":
             return "You must be admin to update reports.", 403
 
-        # update report
+        # Update report with status and comments
         cursor.execute("""
             UPDATE reports
-            SET    status      = %s,
-                   resolved_by = (SELECT user_id FROM users WHERE email = %s)
-            WHERE  report_id   = %s
-        """, (action, admin_email, report_id))
+            SET status = %s,
+                resolved_by = (SELECT user_id FROM users WHERE email = %s),
+                admin_comments = %s
+            WHERE report_id = %s
+        """, (action, admin_email, admin_comments, report_id))
 
         conn.commit()
+        cursor.close()
+        conn.close()
+
+        return redirect(url_for("admin_panel"))
+    except Exception as e:
+        return f"Error: {str(e)}", 500
 
     except Exception as e:
         app.logger.exception(e)
@@ -1139,40 +1146,52 @@ def lookup_reports():
         return f"Error fetching reports: {str(e)}", 500
     
 @app.route("/moderator/handle_report", methods=["POST"])
-def handle_report():
+def handle_report_by_moderator():
+    if "user" not in session:
+        return "Not logged in", 403
+
+    moderator_email = session["user"].get("email")
     report_id = request.form.get("report_id")
-    action = request.form.get("action")  # 'resolved' or 'dismissed'
-    reason_or_punishment = request.form.get("reason_or_punishment")
+    action = request.form.get("action")
+    comments = request.form.get("moderator_comments")
+
+    if action not in ("approved_by_moderator", "dismissed_by_moderator"):
+        return "Invalid action", 400
+
+    if not report_id or not comments:
+        return "Missing fields", 400
 
     try:
         conn = get_db_connection()
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)
 
-        update_query = """
+        # Ensure user is a moderator
+        cursor.execute("""
+            SELECT r.role_name
+            FROM users u
+            JOIN roles r ON u.role_id = r.role_id
+            WHERE u.email = %s
+        """, (moderator_email,))
+        role = cursor.fetchone()
+        if not role or role["role_name"] != "moderator":
+            return "Access denied: moderators only", 403
+
+        # Update report
+        cursor.execute("""
             UPDATE reports
             SET status = %s,
-                moderator_comments = %s,
-                resolved_by = %s,
-                updated_at = NOW()
+                moderator_comments = %s
             WHERE report_id = %s
-        """
-
-        cursor.execute(update_query, (
-            action,
-            reason_or_punishment,
-            session["user_id"],  # Assuming the moderator is logged in
-            report_id
-        ))
+        """, (action, comments, report_id))
 
         conn.commit()
         cursor.close()
         conn.close()
 
-        flash("Report updated successfully.")
-        return redirect("/ModPanel.html")  # Adjust route if needed
-
+        return redirect(url_for("mod_panel"))
     except Exception as e:
         return f"Error handling report: {str(e)}", 500
+
 
 @app.route("/ModPanel.html", methods=["GET"])
 def mod_panel():

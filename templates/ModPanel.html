@@ -1,85 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Moderator Panel</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        h1 {
-            color: #c00;
-        }
-        .report-summary {
-            background-color: #fff;
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            border-radius: 6px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .report-details {
-            display: none;
-            background-color: #fff;
-            border: 1px solid #ccc;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 6px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .form-group {
-            margin: 10px 0;
-        }
-        textarea, select, input[type="submit"] {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-        }
-    </style>
-    <script>
-        function toggleDetails(id) {
-            const details = document.getElementById('details-' + id);
-            details.style.display = details.style.display === 'none' ? 'block' : 'none';
-        }
-    </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Moderator Panel - Project MooseFactory</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
+    h1 {
+      color: #cc0000;
+      margin-bottom: 20px;
+    }
+    .report-summary {
+      background-color: white;
+      border: 2px solid #cc0000;
+      padding: 12px 20px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      border-radius: 6px;
+      font-weight: bold;
+      color: #333;
+    }
+    .report-details {
+      display: none;
+      background-color: white;
+      border: 1px solid #ccc;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 6px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 5px;
+      color: #c00;
+    }
+    textarea, select, input[type="submit"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+      border: 1px solid #cc0000;
+      font-family: Arial, sans-serif;
+    }
+    input[type="submit"] {
+      background-color: #cc0000;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    input[type="submit"]:hover {
+      background-color: #aa0000;
+    }
+    .info-line {
+      margin-bottom: 10px;
+      color: #333;
+    }
+  </style>
+  <script>
+    function toggleDetails(id) {
+      const details = document.getElementById('details-' + id);
+      details.style.display = details.style.display === 'none' ? 'block' : 'none';
+    }
+  </script>
 </head>
 <body>
-    <h1>Moderator Panel</h1>
-    {% for report in reports %}
-    <div class="report-summary" onclick="toggleDetails({{ report.report_id }})">
-        <strong>Report #{{ report.report_id }}</strong> - {{ report.category_name }} - Status: {{ report.status }}
-    </div>
 
-    <div class="report-details" id="details-{{ report.report_id }}">
-        <p><strong>Reporter Cougar ID:</strong> {{ report.reporter_cougar_id }}</p>
-        <p><strong>Reported User ID:</strong> {{ report.reported_user_id }}</p>
-        <p><strong>Category:</strong> {{ report.category_name }}</p>
-        <p><strong>Description:</strong> {{ report.description }}</p>
+  <h1>Moderator Panel</h1>
 
-        <form action="/moderator/handle_report" method="post">
-            <input type="hidden" name="report_id" value="{{ report.report_id }}">
+  {% for report in reports %}
+  <div class="report-summary" onclick="toggleDetails({{ report.report_id }})">
+    Report #{{ report.report_id }} &mdash; {{ report.category_name }} &mdash; Status: {{ report.status }}
+  </div>
 
-            <div class="form-group">
-                <label for="action">Action:</label>
-                <select name="action" required>
-                    <option value="">-- Select an Action --</option>
-                    <option value="dismissed">Dismiss Report</option>
-                    <option value="resolved">Approve Report</option>
-                </select>
-            </div>
+  <div class="report-details" id="details-{{ report.report_id }}">
+    <div class="info-line"><strong>Reporter Cougar ID:</strong> {{ report.reporter_cougar_id }}</div>
+    <div class="info-line"><strong>Reported User ID:</strong> {{ report.reported_user_id }}</div>
+    <div class="info-line"><strong>Category:</strong> {{ report.category_name }}</div>
+    <div class="info-line"><strong>Description:</strong> {{ report.description }}</div>
 
-            <div class="form-group">
-                <label for="reason_or_punishment">Reason (if dismissed) or Recommended Punishment (if approved):</label>
-                <textarea name="reason_or_punishment" rows="3" required></textarea>
-            </div>
+    <form action="/moderator/handle_report" method="POST">
+      <input type="hidden" name="report_id" value="{{ report.report_id }}">
 
-            <input type="submit" value="Submit Decision">
-        </form>
-    </div>
-    {% endfor %}
+      <label for="action-{{ report.report_id }}">Moderator Action:</label>
+      <select name="action" id="action-{{ report.report_id }}" required>
+        <option value="">-- Select an Action --</option>
+        <option value="approved_by_moderator">Approve Report</option>
+        <option value="dismissed_by_moderator">Dismiss Report</option>
+      </select>
+
+      <label for="moderator_comments-{{ report.report_id }}">Reason or Recommended Punishment:</label>
+      <textarea name="moderator_comments" id="moderator_comments-{{ report.report_id }}" rows="4" required></textarea>
+
+      <input type="submit" value="Submit Decision">
+    </form>
+  </div>
+  {% endfor %}
+
 </body>
 </html>
