@@ -181,7 +181,7 @@ CREATE TABLE workflow_steps (
     
     is_required BOOLEAN DEFAULT TRUE,
     min_approvals INT DEFAULT 1,  -- For multi-approver steps
-    FOREIGN KEY (workflow_id) REFERENCES workflow_definitions(workflow_id) ON DELETE CASCADE,
+    FOREIGN KEY (workflow_id) REFERENCES workflows(workflow_id) ON DELETE CASCADE,
     FOREIGN KEY (unit_id) REFERENCES organizational_units(unit_id) ON DELETE SET NULL,
     FOREIGN KEY (role_id) REFERENCES roles(role_id) ON DELETE SET NULL,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL
