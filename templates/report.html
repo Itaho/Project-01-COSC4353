@@ -94,7 +94,12 @@
     <h1>Report a User</h1>
     <form action="{{ url_for('report_user') }}" method="POST">
       <label for="reported_email">User’s email to report:</label>
-      <input type="email" name="reported_email" id="reported_email" required />
+      <select name="reported_email" id="reported_email" required>
+        {% for user in users %}
+          <option value="{{ user.email }}">{{ user.email }} ({{ user.name }})</option>
+        {% endfor %}
+      </select>
+      
 
       <label for="category_id">Category:</label>
       <select name="category_id" id="category_id" required>

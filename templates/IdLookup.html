@@ -122,6 +122,8 @@
             <p><strong>Category:</strong> {{ report.category_name }}</p>
             <p><strong>Description:</strong> {{ report.description }}</p>
             <p><strong>Created At:</strong> {{ report.created_at }}</p>
+            <p><strong>Moderator Comments:</strong> {{ report.moderator_comments or '—' }}</p>
+            <p><strong>Admin Comments:</strong> {{ report.admin_comments or '—' }}</p>
           </div>
         </div>
       {% endfor %}

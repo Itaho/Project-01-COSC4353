@@ -492,10 +492,20 @@ def report_user():
 def report_form():
     conn   = get_db_connection()
     cursor = conn.cursor(dictionary=True)
+
+    # Get active categories
     cursor.execute("SELECT category_id, category_name FROM report_categories WHERE is_active")
     categories = cursor.fetchall()
-    cursor.close(); conn.close()
-    return render_template("report.html", categories=categories)
+
+    # Get active users
+    cursor.execute("SELECT user_id, name, email FROM users WHERE status = 'active'")
+    users = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template("report.html", categories=categories, users=users)
+
 
 @app.route('/upload-signature', methods=['POST'])
 def upload_signature():
@@ -1152,7 +1162,7 @@ def handle_report():
         conn.close()
 
         flash("Report updated successfully.")
-        return redirect("/ModPanel")  # Adjust route if needed
+        return redirect("/ModPanel.html")  # Adjust route if needed
 
     except Exception as e:
         return f"Error handling report: {str(e)}", 500

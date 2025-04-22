@@ -172,6 +172,8 @@
             <th>Description</th>
             <th>Submitted</th>
             <th>Status</th>
+            <th>Moderator Comments</th>
+            <th>Admin Comments</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -185,9 +187,21 @@
             <td style="max-width:250px; word-break:break-word;">{{ rep.description }}</td>
             <td>{{ rep.created_at }}</td>
             <td>{{ rep.status }}</td>
+            <td>{{ rep.moderator_comments or '—' }}</td>
+            <td>
+              {% if rep.status in ['resolved', 'dismissed'] %}
+              <form action="{{ url_for('update_admin_comments') }}" method="POST">
+                <input type="hidden" name="report_id" value="{{ rep.report_id }}">
+                <textarea name="admin_comments" rows="2" style="width:100%;" placeholder="Add admin comment..." required>{{ rep.admin_comments or '' }}</textarea>
+                <button type="submit">Save</button>
+              </form>
+              {% else %}
+                {{ rep.admin_comments or '—' }}
+              {% endif %}
+            </td>
             <td class="actions-column">
               {% if rep.status == 'submitted' or rep.status == 'under_review' %}
-              <form action="{{ url_for('update_report') }}" method="POST">
+              <form action="{{ url_for('update_report') }}" method="POST" style="margin-bottom: 5px;">
                 <input type="hidden" name="report_id" value="{{ rep.report_id }}">
                 <input type="hidden" name="action" value="resolved">
                 <button type="submit">Resolve</button>
@@ -206,6 +220,7 @@
         </tbody>
       </table>
     </div>
+    
 
     <div class="panel-section">
       <h2>Enable or Disable a User</h2>
