@@ -57,3 +57,13 @@ SELECT r.role_id, p.permission_id
 FROM roles r, permissions p
 WHERE r.role_name = 'admin' 
 AND p.permission_name IN ('manage_workflows', 'manage_approvers', 'view_all_reports', 'resolve_reports');
+
+INSERT INTO users (name, email) 
+VALUES ('Basic User', 'basic.user@uh.edu');
+
+INSERT INTO users (name, email, signature_path)
+VALUES (
+    'User With Signature', 
+    'signature.user@uh.edu', 
+    'signatures/sample.png'
+);
