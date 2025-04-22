@@ -141,14 +141,12 @@ def admin_panel():
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-
-        # Load users with access level info (now includes moderator)
+        # Query joins users and roles tables to get current access levels and signature paths
         cursor.execute("""
             SELECT 
                 u.email AS username, 
                 CASE 
                     WHEN r.role_name = 'admin' THEN 'administrator'
-                    WHEN r.role_name = 'moderator' THEN 'moderator'
                     ELSE 'basic'
                 END AS access_level,
                 u.status,
@@ -158,8 +156,8 @@ def admin_panel():
             ORDER BY u.email
         """)
         users = cursor.fetchall()
-
-        # Load petitions
+        
+        # loads petitions
         cursor.execute("""
             SELECT
                 req.request_id,
@@ -176,8 +174,7 @@ def admin_panel():
             ORDER BY req.submitted_at DESC
         """)
         petitions = cursor.fetchall()
-
-        # Load reports
+        # gets report info
         cursor.execute("""
             SELECT r.report_id,
                    reporter.email  AS reporter_email,
@@ -185,9 +182,7 @@ def admin_panel():
                    rc.category_name,
                    r.description,
                    r.status,
-                   r.created_at,
-                   r.moderator_comments,
-                   r.admin_comments
+                   r.created_at
             FROM   reports           r
             JOIN   users   reporter  ON reporter.user_id = r.reporter_id
             JOIN   users   reported  ON reported.user_id = r.reported_user_id
@@ -195,15 +190,13 @@ def admin_panel():
             ORDER  BY r.created_at DESC
         """)
         reports = cursor.fetchall()
-
+        
         cursor.close()
         conn.close()
-
-        return render_template("adminpanel.html", users=users, petitions=petitions, reports=reports)
-
+        return render_template("adminpanel.html", users=users, petitions=petitions, **{"reports": reports})
     except Exception as e:
         return f"Error fetching users: {str(e)}", 500
-
+    
 @app.route("/update-report", methods=["POST"])
 def update_report():
     if "user" not in session:
@@ -499,20 +492,10 @@ def report_user():
 def report_form():
     conn   = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-
-    # Get active categories
     cursor.execute("SELECT category_id, category_name FROM report_categories WHERE is_active")
     categories = cursor.fetchall()
-
-    # Get active users
-    cursor.execute("SELECT user_id, name, email FROM users WHERE status = 'active'")
-    users = cursor.fetchall()
-
-    cursor.close()
-    conn.close()
-
-    return render_template("report.html", categories=categories, users=users)
-
+    cursor.close(); conn.close()
+    return render_template("report.html", categories=categories)
 
 @app.route('/upload-signature', methods=['POST'])
 def upload_signature():
