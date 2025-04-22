@@ -1167,7 +1167,9 @@ def lookup_reports():
                    rc.category_name,
                    r.description,
                    r.status,
-                   r.created_at
+                   r.created_at,
+                   r.moderator_comments,
+                   r.admin_comments
             FROM reports r
             JOIN users reporter ON r.reporter_id = reporter.user_id
             JOIN users reported ON r.reported_user_id = reported.user_id
@@ -1183,6 +1185,7 @@ def lookup_reports():
         return render_template("IdLookup.html", reports=reports, searched=True)
     except Exception as e:
         return f"Error fetching reports: {str(e)}", 500
+
     
 @app.route("/moderator/handle_report", methods=["POST"])
 def handle_report_by_moderator():
