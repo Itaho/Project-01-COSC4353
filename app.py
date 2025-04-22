@@ -1234,7 +1234,34 @@ def handle_report_by_moderator():
 
 @app.route("/ModPanel.html", methods=["GET"])
 def mod_panel():
-    return render_template("ModPanel.html")
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT r.report_id,
+                   reporter.email AS reporter_email,
+                   r.reporter_cougar_id,
+                   r.reported_user_id,
+                   rc.category_name,
+                   r.description,
+                   r.status,
+                   r.moderator_comments,
+                   r.created_at
+            FROM reports r
+            JOIN users reporter ON reporter.user_id = r.reporter_id
+            JOIN report_categories rc ON rc.category_id = r.category_id
+            ORDER BY r.created_at DESC
+        """)
+        reports = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return render_template("ModPanel.html", reports=reports)
+    except Exception as e:
+        return f"Error loading moderator panel: {str(e)}", 500
+
 
 # --- for local testing ---
 @app.route("/dev-login")
